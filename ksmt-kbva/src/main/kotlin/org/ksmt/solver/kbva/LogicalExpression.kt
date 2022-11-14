@@ -2,9 +2,11 @@ package org.ksmt.solver.kbva
 
 import org.kosat.Lit
 
-abstract class LogicalExpression(literalProducer: LiteralProducer) {
-    val id: Lit = literalProducer.newLiteral()
+
+abstract class LogicalExpression(val id: Lit) {
     val cnf: List<List<Lit>> by lazy { buildCNF() }
+
+    constructor(literalProducer: LiteralProducer) : this(literalProducer.newLiteral())
 
     private fun buildCNF(): List<List<Lit>> {
         val result = ArrayList<ArrayList<Lit>>()
@@ -48,7 +50,7 @@ class AndExpression(
 
         val c = id
         val a = expr1.id
-        val b = expr1.id
+        val b = expr2.id
 
         cnf.add(arrayListOf(-a, -b, c))
         cnf.add(arrayListOf(a, -c))
@@ -69,7 +71,7 @@ class OrExpression(
 
         val c = id
         val a = expr1.id
-        val b = expr1.id
+        val b = expr2.id
 
         cnf.add(arrayListOf(a, b, -c))
         cnf.add(arrayListOf(-a, c))
@@ -90,7 +92,7 @@ class ImpliesExpression(
 
         val c = id
         val a = expr1.id
-        val b = expr1.id
+        val b = expr2.id
 
         cnf.add(arrayListOf(-a, b, -c))
         cnf.add(arrayListOf(a, c))
@@ -111,7 +113,7 @@ class EquivExpression(
 
         val c = id
         val a = expr1.id
-        val b = expr1.id
+        val b = expr2.id
 
         cnf.add(arrayListOf(-a, -b, c))
         cnf.add(arrayListOf(a, b, c))
@@ -132,7 +134,7 @@ class XorExpression(
 
         val c = id
         val a = expr1.id
-        val b = expr1.id
+        val b = expr2.id
 
         cnf.add(arrayListOf(-a, -b, -c))
         cnf.add(arrayListOf(a, b, -c))
