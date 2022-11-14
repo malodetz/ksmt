@@ -1,5 +1,8 @@
 package org.ksmt.solver.kbva
 
+import org.kosat.Kosat
+import org.kosat.Lit
+import org.kosat.Solver
 import org.ksmt.KContext
 import org.ksmt.expr.KExpr
 import org.ksmt.solver.KModel
@@ -9,6 +12,15 @@ import org.ksmt.sort.KBoolSort
 import kotlin.time.Duration
 
 open class KBVASolver (private val ctx: KContext) : KSolver {
+
+    private val solver : Solver = Kosat(ArrayList())
+
+    private val bitsOfExpr : HashMap<KExpr<*>, List<Lit>> = HashMap()
+
+    private val currentCNF : List<List<Int>> = ArrayList()
+
+    private val exprBuilder: ExpressionBuilder = ExpressionBuilder(bitsOfExpr)
+
     override fun assert(expr: KExpr<KBoolSort>) {
         TODO("Not yet implemented")
     }
