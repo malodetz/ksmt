@@ -1,7 +1,11 @@
 package org.ksmt.solver.kbva
 
+import org.kosat.Kosat
+import org.kosat.Lit
 import org.ksmt.KContext
 import org.ksmt.expr.KExpr
+import org.ksmt.expr.LogicalExpression
+import org.ksmt.expr.rewrite.KExprBitBuilder
 import org.ksmt.solver.KModel
 import org.ksmt.solver.KSolver
 import org.ksmt.solver.KSolverStatus
@@ -10,17 +14,15 @@ import kotlin.time.Duration
 
 open class KBVASolver(private val ctx: KContext) : KSolver {
 
-    private val bitsOfExpr: HashMap<KExpr<*>, List<SingleLiteral>> = HashMap()
 
-    private val currentCNF: ArrayList<List<Int>> = ArrayList()
+    private val currentCNF: MutableList<MutableList<Lit>> = mutableListOf()
 
-    private val exprBuilder: KBVAExpressionBuilder = KBVAExpressionBuilder(bitsOfExpr)
+    private val exprBuilder: KExprBitBuilder = KExprBitBuilder()
 
     override fun assert(expr: KExpr<KBoolSort>) {
-        val (_, conditions) = exprBuilder.transformExpression(expr)
-        if (conditions != null) {
-            val cnf = conditions.cnf
-            currentCNF.addAll(cnf)
+        val conditions  = exprBuilder.transform(expr)
+        if (conditions is LogicalExpression){
+            conditions.cnf.forEach { currentCNF.add(it.toMutableList()) }
         }
     }
 
@@ -38,7 +40,8 @@ open class KBVASolver(private val ctx: KContext) : KSolver {
 
     override fun check(timeout: Duration): KSolverStatus {
         println(currentCNF)
-//        val solver: Solver = Kosat(currentCNF)
+        val solver = Kosat(currentCNF)
+        val answer = solver.solve()
         return KSolverStatus.UNKNOWN
     }
 

@@ -6,6 +6,9 @@ import org.ksmt.expr.transformer.KTransformerBase
 import org.ksmt.sort.KSort
 
 abstract class KExpr<T : KSort>(ctx: KContext) : KAst(ctx) {
+
+    val expressionBits: MutableList<SingleLiteral> = mutableListOf()
+
     abstract fun sort(): T
 
     abstract fun accept(transformer: KTransformerBase): KExpr<T>

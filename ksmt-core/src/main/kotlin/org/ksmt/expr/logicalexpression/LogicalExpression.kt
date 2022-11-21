@@ -1,53 +1,50 @@
-package org.ksmt.solver.kbva
+package org.ksmt.expr.logicalexpression
 
-import org.kosat.Lit
+import org.ksmt.expr.rewrite.Lit
+import org.ksmt.expr.rewrite.LiteralProvider
 
 
 abstract class LogicalExpression(val id: Lit) {
-    val cnf: List<List<Lit>> by lazy { buildCNF() }
+    val cnf: MutableList<List<Lit>> by lazy { buildCNF() }
 
-    constructor(literalProducer: LiteralProducer) : this(literalProducer.newLiteral())
+    constructor(literalProvider: LiteralProvider) : this(literalProvider.newLiteral())
 
-    private fun buildCNF(): List<List<Lit>> {
-        val result = ArrayList<ArrayList<Lit>>()
-        traverse(result)
-        return result
-    }
-
-    abstract fun traverse(cnf: ArrayList<ArrayList<Lit>>)
+    abstract fun buildCNF(): MutableList<List<Lit>>
 
 }
 
-class SingleLiteral(literalProducer: LiteralProducer) : LogicalExpression(literalProducer) {
-    override fun traverse(cnf: ArrayList<ArrayList<Lit>>) {}
+class SingleLiteral(literalProvider: LiteralProvider) : LogicalExpression(literalProvider) {
+    override fun buildCNF(): MutableList<List<Lit>> {
+        return mutableListOf()
+    }
 }
 
 class NotExpression(
-    literalProducer: LiteralProducer,
+    literalProvider: LiteralProvider,
     private val expr: LogicalExpression
-) : LogicalExpression(literalProducer) {
+) : LogicalExpression(literalProvider) {
 
-    override fun traverse(cnf: ArrayList<ArrayList<Lit>>) {
-        expr.traverse(cnf)
+    override fun buildCNF(): MutableList<List<Lit>> {
+        val cnf = expr.cnf
 
         val c = id
         val a = expr.id
         cnf.add(arrayListOf(-a, -c))
         cnf.add(arrayListOf(a, c))
+        return cnf
     }
 
 }
 
 class AndExpression(
-    literalProducer: LiteralProducer,
+    literalProvider: LiteralProvider,
     private val expr1: LogicalExpression,
     private val expr2: LogicalExpression
-) : LogicalExpression(literalProducer) {
+) : LogicalExpression(literalProvider) {
 
-    override fun traverse(cnf: ArrayList<ArrayList<Lit>>) {
-        expr1.traverse(cnf)
-        expr2.traverse(cnf)
-
+    override fun buildCNF(): MutableList<List<Lit>> {
+        val cnf = expr1.cnf
+        cnf.addAll(expr2.cnf)
         val c = id
         val a = expr1.id
         val b = expr2.id
@@ -55,19 +52,20 @@ class AndExpression(
         cnf.add(arrayListOf(-a, -b, c))
         cnf.add(arrayListOf(a, -c))
         cnf.add(arrayListOf(b, -c))
+        return cnf
     }
 
 }
 
 class OrExpression(
-    literalProducer: LiteralProducer,
+    literalProvider: LiteralProvider,
     private val expr1: LogicalExpression,
     private val expr2: LogicalExpression
-) : LogicalExpression(literalProducer) {
+) : LogicalExpression(literalProvider) {
 
-    override fun traverse(cnf: ArrayList<ArrayList<Lit>>) {
-        expr1.traverse(cnf)
-        expr2.traverse(cnf)
+    override fun buildCNF(): MutableList<List<Lit>> {
+        val cnf = expr1.cnf
+        cnf.addAll(expr2.cnf)
 
         val c = id
         val a = expr1.id
@@ -76,19 +74,21 @@ class OrExpression(
         cnf.add(arrayListOf(a, b, -c))
         cnf.add(arrayListOf(-a, c))
         cnf.add(arrayListOf(-b, c))
+        return cnf
     }
 
 }
 
 class ImpliesExpression(
-    literalProducer: LiteralProducer,
+    literalProvider: LiteralProvider,
     private val expr1: LogicalExpression,
     private val expr2: LogicalExpression
-) : LogicalExpression(literalProducer) {
+) : LogicalExpression(literalProvider) {
 
-    override fun traverse(cnf: ArrayList<ArrayList<Lit>>) {
-        expr1.traverse(cnf)
-        expr2.traverse(cnf)
+
+    override fun buildCNF(): MutableList<List<Lit>> {
+        val cnf = expr1.cnf
+        cnf.addAll(expr2.cnf)
 
         val c = id
         val a = expr1.id
@@ -97,19 +97,20 @@ class ImpliesExpression(
         cnf.add(arrayListOf(-a, b, -c))
         cnf.add(arrayListOf(a, c))
         cnf.add(arrayListOf(-b, c))
+        return cnf
     }
 
 }
 
 class EquivExpression(
-    literalProducer: LiteralProducer,
+    literalProvider: LiteralProvider,
     private val expr1: LogicalExpression,
     private val expr2: LogicalExpression
-) : LogicalExpression(literalProducer) {
+) : LogicalExpression(literalProvider) {
 
-    override fun traverse(cnf: ArrayList<ArrayList<Lit>>) {
-        expr1.traverse(cnf)
-        expr2.traverse(cnf)
+    override fun buildCNF(): MutableList<List<Lit>> {
+        val cnf = expr1.cnf
+        cnf.addAll(expr2.cnf)
 
         val c = id
         val a = expr1.id
@@ -119,18 +120,20 @@ class EquivExpression(
         cnf.add(arrayListOf(a, b, c))
         cnf.add(arrayListOf(a, -b, -c))
         cnf.add(arrayListOf(-a, b, -c))
+        return cnf
     }
 
 }
 
 class XorExpression(
-    literalProducer: LiteralProducer,
+    literalProvider: LiteralProvider,
     private val expr1: LogicalExpression,
     private val expr2: LogicalExpression
-) : LogicalExpression(literalProducer) {
-    override fun traverse(cnf: ArrayList<ArrayList<Lit>>) {
-        expr1.traverse(cnf)
-        expr2.traverse(cnf)
+) : LogicalExpression(literalProvider) {
+
+    override fun buildCNF(): MutableList<List<Lit>> {
+        val cnf = expr1.cnf
+        cnf.addAll(expr2.cnf)
 
         val c = id
         val a = expr1.id
@@ -140,6 +143,7 @@ class XorExpression(
         cnf.add(arrayListOf(a, b, -c))
         cnf.add(arrayListOf(a, -b, c))
         cnf.add(arrayListOf(-a, b, c))
+        return cnf
     }
 
 }
