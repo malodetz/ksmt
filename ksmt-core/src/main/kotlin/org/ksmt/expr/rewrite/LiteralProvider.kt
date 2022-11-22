@@ -1,7 +1,7 @@
 package org.ksmt.expr.rewrite
 
 import org.ksmt.expr.KExpr
-import org.ksmt.expr.SingleLiteral
+import org.ksmt.expr.logicalexpression.SingleLiteral
 import org.ksmt.sort.KBoolSort
 import org.ksmt.sort.KBvSort
 import org.ksmt.sort.KFpSort

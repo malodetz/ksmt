@@ -1,10 +1,13 @@
 package org.ksmt.expr.rewrite
 
+import org.ksmt.KContext
 import org.ksmt.expr.*
 import org.ksmt.expr.logicalexpression.*
+import org.ksmt.sort.KBoolSort
+import org.ksmt.sort.KSort
 
-
-class KExprBitBuilder {
+@Suppress("UNUSED_PARAMETER")
+class KExprBitBuilder(val ctx: KContext) {
 
     private val literalProvider: LiteralProvider = LiteralProvider()
 
@@ -32,7 +35,26 @@ class KExprBitBuilder {
         return ImpliesExpression(literalProvider, expr1, expr2)
     }
 
-    fun transform(expr: KExpr<*>): Any = error("transformer is not implemented for this type of expression")
+    private fun getBitOf(expr: KExpr<KBoolSort>): SingleLiteral {
+        return literalProvider.expressionBits(expr)[0]
+    }
+
+    private fun uniteConditions(
+        mainCondition: LogicalExpression,
+        conditions: List<LogicalExpression?>
+    ): LogicalExpression {
+        var result = mainCondition
+        conditions.forEach {
+            if (it != null) {
+                result = and(result, it)
+            }
+        }
+        return result
+    }
+
+    fun transform(expr: KExpr<*>): LogicalExpression? {
+        error("transformer is not implemented for this type of expression")
+    }
 
     fun transform(expr: KConst<*>): LogicalExpression? {
         literalProvider.expressionBits(expr)
@@ -40,62 +62,98 @@ class KExprBitBuilder {
     }
 
     fun transform(expr: KTrue): LogicalExpression {
-        return literalProvider.expressionBits(expr)[0]
+        return getBitOf(expr)
     }
 
     fun transform(expr: KFalse): LogicalExpression {
-        return not(literalProvider.expressionBits(expr)[0])
+        return not(getBitOf(expr))
     }
 
-    fun transform(expr: KNotExpr): LogicalExpression? {
+    fun transform(expr: KNotExpr): LogicalExpression {
         val condition = transform(expr.arg)
 
-        val bit = bits[0]
-        val literal = SingleLiteral(literalProvider)
+        val literal = getBitOf(expr)
+        val otherLiteral = getBitOf(expr.arg)
 
-        var newConds = eq(literal, not(bit))
-        if (conds != null) {
-            newConds = and(newConds, conds)
-        }
-        return Pair(mutableListOf(literal), newConds)
+        return uniteConditions(eq(literal, not(otherLiteral)), mutableListOf(condition))
     }
 
+    fun transform(expr: KXorExpr): LogicalExpression {
+        val conditions1 = transform(expr.a)
+        val conditions2 = transform(expr.b)
+        val bit1 = getBitOf(expr.a)
+        val bit2 = getBitOf(expr.b)
+        val bit = getBitOf(expr)
 
-//    fun transform(expr: KXorExpr): LogicalExpression? {
-//        val (bits1, conds1) = transformExpression(expr.a)
-//        val bit1 = bits1[0]
-//
-//        val (bits2, conds2) = transformExpression(expr.b)
-//        val bit2 = bits2[0]
-//
-//        val literal = SingleLiteral(literalProvider)
-//        var newConds = eq(literal, xor(bit1, bit2))
-//        if (conds1 != null) {
-//            newConds = and(newConds, conds1)
-//        }
-//        if (conds2 != null) {
-//            newConds = and(newConds, conds2)
-//        }
-//        return Pair(mutableListOf(literal), newConds)
-//    }
-//
-//    fun transform(expr: KImpliesExpr): LogicalExpression? {
-//        val (bits1, conds1) = transformExpression(expr.p)
-//        val bit1 = bits1[0]
-//
-//        val (bits2, conds2) = transformExpression(expr.q)
-//        val bit2 = bits2[0]
-//
-//        val literal = SingleLiteral(literalProvider)
-//        var newConds = eq(literal, implies(bit1, bit2))
-//        if (conds1 != null) {
-//            newConds = and(newConds, conds1)
-//        }
-//        if (conds2 != null) {
-//            newConds = and(newConds, conds2)
-//        }
-//        return Pair(mutableListOf(literal), newConds)
-//    }
+        return uniteConditions(eq(bit, xor(bit1, bit2)), mutableListOf(conditions1, conditions2))
+    }
 
+    fun transform(expr: KImpliesExpr): LogicalExpression {
+        val conditions1 = transform(expr.p)
+        val conditions2 = transform(expr.q)
+        val bit1 = getBitOf(expr.p)
+        val bit2 = getBitOf(expr.q)
+        val bit = getBitOf(expr)
+
+        return uniteConditions(eq(bit, implies(bit1, bit2)), mutableListOf(conditions1, conditions2))
+    }
+
+    fun transform(expr: KAndExpr): LogicalExpression {
+        val conditions = expr.args.map { transform(it) }.toCollection(mutableListOf())
+        val bits = expr.args.map { transform(it)!! }.toCollection(mutableListOf())
+
+        val equality = eq(getBitOf(expr), uniteConditions(bits[0], bits.drop(1)))
+        return uniteConditions(equality, conditions)
+    }
+
+    fun transform(expr: KOrExpr): LogicalExpression {
+        val conditions = expr.args.map { transform(it) }.toCollection(mutableListOf())
+        val bits = expr.args.map { transform(it)!! }.toCollection(mutableListOf())
+
+        var disjunction = bits[0]
+        bits.drop(1).forEach { disjunction = or(disjunction, it) }
+        val equality = eq(getBitOf(expr), disjunction)
+        return uniteConditions(equality, conditions)
+    }
+
+    fun <T : KSort> transform(expr: KEqExpr<T>): LogicalExpression {
+        val conditions1 = transform(expr.lhs)
+        val conditions2 = transform(expr.rhs)
+        val bits1 = literalProvider.expressionBits(expr.lhs)
+        val bits2 = literalProvider.expressionBits(expr.rhs)
+
+        val equalities = bits1.zip(bits2).map { (a, b) -> eq(a, b) }
+        val equality = eq(getBitOf(expr), uniteConditions(equalities[0], equalities.drop(1)))
+        return uniteConditions(equality, mutableListOf(conditions1, conditions2))
+    }
+
+    fun <T : KSort> transform(expr: KDistinctExpr<T>): LogicalExpression {
+        val inequalities = mutableListOf<KExpr<KBoolSort>>()
+        for (i in 0 until expr.args.size) {
+            for (j in i + 1 until expr.args.size) {
+                inequalities.add(KNotExpr(ctx, KEqExpr(ctx, expr.args[i], expr.args[j])))
+            }
+        }
+        return transform(KAndExpr(ctx, inequalities))
+    }
+
+    fun <T : KSort> transform(expr: KIteExpr<T>): LogicalExpression {
+        val conditions1 = transform(expr.trueBranch)
+        val conditions2 = transform(expr.falseBranch)
+        val conditions3 = transform(expr.condition)
+        val bits1 = literalProvider.expressionBits(expr.trueBranch)
+        val bits2 = literalProvider.expressionBits(expr.falseBranch)
+        val bits = literalProvider.expressionBits(expr)
+        val p = getBitOf(expr.condition)
+
+        val equalities1 = bits1.zip(bits).map { (a, b) -> eq(a, b) }
+        val equality1 = uniteConditions(equalities1[0], equalities1.drop(1))
+
+        val equalities2 = bits2.zip(bits).map { (a, b) -> eq(a, b) }
+        val equality2 = uniteConditions(equalities2[0], equalities2.drop(1))
+
+        val finalExpr = and(implies(p, equality1), implies(not(p), equality2))
+        return uniteConditions(finalExpr, mutableListOf(conditions1, conditions2, conditions3))
+    }
 
 }
