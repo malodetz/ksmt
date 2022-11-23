@@ -4,27 +4,47 @@ import org.ksmt.expr.rewrite.Lit
 import org.ksmt.expr.rewrite.LiteralProvider
 
 
+typealias CNFList = MutableList<List<Lit>>
+
 abstract class LogicalExpression(val id: Lit) {
-    val cnf: MutableList<List<Lit>> by lazy { buildCNF() }
+    val cnf: CNFList by lazy { buildCNF() }
 
     constructor(literalProvider: LiteralProvider) : this(literalProvider.newLiteral())
 
-    abstract fun buildCNF(): MutableList<List<Lit>>
+    abstract fun buildCNF(): CNFList
 
 }
 
-class SingleLiteral(literalProvider: LiteralProvider) : LogicalExpression(literalProvider) {
-    override fun buildCNF(): MutableList<List<Lit>> {
+open class SingleLiteral(id: Lit) : LogicalExpression(id) {
+
+    constructor(literalProvider: LiteralProvider) : this(literalProvider.newLiteral())
+
+    override fun buildCNF(): CNFList {
         return mutableListOf()
     }
 }
+
+class TrueLiteral(id: Lit) : SingleLiteral(id) {
+
+    override fun buildCNF(): CNFList {
+        return mutableListOf(mutableListOf(id))
+    }
+}
+
+class FalseLiteral(id: Lit) : SingleLiteral(id) {
+
+    override fun buildCNF(): CNFList {
+        return mutableListOf(mutableListOf(-id))
+    }
+}
+
 
 class NotExpression(
     literalProvider: LiteralProvider,
     private val expr: LogicalExpression
 ) : LogicalExpression(literalProvider) {
 
-    override fun buildCNF(): MutableList<List<Lit>> {
+    override fun buildCNF(): CNFList {
         val cnf = expr.cnf
 
         val c = id
@@ -42,7 +62,7 @@ class AndExpression(
     private val expr2: LogicalExpression
 ) : LogicalExpression(literalProvider) {
 
-    override fun buildCNF(): MutableList<List<Lit>> {
+    override fun buildCNF(): CNFList {
         val cnf = expr1.cnf
         cnf.addAll(expr2.cnf)
         val c = id
@@ -63,7 +83,7 @@ class OrExpression(
     private val expr2: LogicalExpression
 ) : LogicalExpression(literalProvider) {
 
-    override fun buildCNF(): MutableList<List<Lit>> {
+    override fun buildCNF(): CNFList {
         val cnf = expr1.cnf
         cnf.addAll(expr2.cnf)
 
@@ -86,7 +106,7 @@ class ImpliesExpression(
 ) : LogicalExpression(literalProvider) {
 
 
-    override fun buildCNF(): MutableList<List<Lit>> {
+    override fun buildCNF(): CNFList {
         val cnf = expr1.cnf
         cnf.addAll(expr2.cnf)
 
@@ -108,7 +128,7 @@ class EquivExpression(
     private val expr2: LogicalExpression
 ) : LogicalExpression(literalProvider) {
 
-    override fun buildCNF(): MutableList<List<Lit>> {
+    override fun buildCNF(): CNFList {
         val cnf = expr1.cnf
         cnf.addAll(expr2.cnf)
 
@@ -131,7 +151,7 @@ class XorExpression(
     private val expr2: LogicalExpression
 ) : LogicalExpression(literalProvider) {
 
-    override fun buildCNF(): MutableList<List<Lit>> {
+    override fun buildCNF(): CNFList {
         val cnf = expr1.cnf
         cnf.addAll(expr2.cnf)
 

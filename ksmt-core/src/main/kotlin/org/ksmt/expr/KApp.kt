@@ -2,6 +2,8 @@ package org.ksmt.expr
 
 import org.ksmt.KContext
 import org.ksmt.decl.KDecl
+import org.ksmt.expr.logicalexpression.LogicalExpression
+import org.ksmt.expr.rewrite.KExprBitBuilder
 import org.ksmt.expr.transformer.KTransformerBase
 import org.ksmt.sort.KSort
 
@@ -28,6 +30,8 @@ abstract class KApp<T : KSort, A : KExpr<*>> internal constructor(ctx: KContext)
             append(')')
         }
     }
+
+    override fun accept(expressionBuilder: KExprBitBuilder): LogicalExpression? = expressionBuilder.transform(this)
 }
 
 open class KFunctionApp<T : KSort> internal constructor(
@@ -40,6 +44,8 @@ open class KFunctionApp<T : KSort> internal constructor(
     override fun decl(): KDecl<T> = decl
 
     override fun accept(transformer: KTransformerBase): KExpr<T> = transformer.transform(this)
+
+    override fun accept(expressionBuilder: KExprBitBuilder): LogicalExpression? = expressionBuilder.transform(this)
 }
 
 class KConst<T : KSort> internal constructor(
@@ -47,4 +53,6 @@ class KConst<T : KSort> internal constructor(
     decl: KDecl<T>
 ) : KFunctionApp<T>(ctx, decl, args = emptyList()) {
     override fun accept(transformer: KTransformerBase): KExpr<T> = transformer.transform(this)
+
+    override fun accept(expressionBuilder: KExprBitBuilder): LogicalExpression? = expressionBuilder.transform(this)
 }

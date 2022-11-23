@@ -11,6 +11,8 @@ import org.ksmt.decl.KNotDecl
 import org.ksmt.decl.KOrDecl
 import org.ksmt.decl.KTrueDecl
 import org.ksmt.decl.KXorDecl
+import org.ksmt.expr.logicalexpression.LogicalExpression
+import org.ksmt.expr.rewrite.KExprBitBuilder
 import org.ksmt.expr.transformer.KTransformerBase
 import org.ksmt.sort.KBoolSort
 import org.ksmt.sort.KSort
@@ -24,6 +26,8 @@ class KAndExpr internal constructor(
     override fun decl(): KAndDecl = ctx.mkAndDecl()
 
     override fun accept(transformer: KTransformerBase): KExpr<KBoolSort> = transformer.transform(this)
+
+    override fun accept(expressionBuilder: KExprBitBuilder): LogicalExpression = expressionBuilder.transform(this)
 }
 
 class KOrExpr internal constructor(
@@ -35,6 +39,8 @@ class KOrExpr internal constructor(
     override fun decl(): KOrDecl = ctx.mkOrDecl()
 
     override fun accept(transformer: KTransformerBase): KExpr<KBoolSort> = transformer.transform(this)
+
+    override fun accept(expressionBuilder: KExprBitBuilder): LogicalExpression = expressionBuilder.transform(this)
 }
 
 class KNotExpr internal constructor(
@@ -49,6 +55,8 @@ class KNotExpr internal constructor(
         get() = listOf(arg)
 
     override fun accept(transformer: KTransformerBase): KExpr<KBoolSort> = transformer.transform(this)
+
+    override fun accept(expressionBuilder: KExprBitBuilder): LogicalExpression = expressionBuilder.transform(this)
 }
 
 class KImpliesExpr internal constructor(
@@ -64,6 +72,7 @@ class KImpliesExpr internal constructor(
         get() = listOf(p, q)
 
     override fun accept(transformer: KTransformerBase): KExpr<KBoolSort> = transformer.transform(this)
+    override fun accept(expressionBuilder: KExprBitBuilder): LogicalExpression = expressionBuilder.transform(this)
 }
 
 class KXorExpr internal constructor(
@@ -79,6 +88,8 @@ class KXorExpr internal constructor(
         get() = listOf(a, b)
 
     override fun accept(transformer: KTransformerBase): KExpr<KBoolSort> = transformer.transform(this)
+
+    override fun accept(expressionBuilder: KExprBitBuilder): LogicalExpression = expressionBuilder.transform(this)
 }
 
 class KEqExpr<T : KSort> internal constructor(
@@ -93,6 +104,8 @@ class KEqExpr<T : KSort> internal constructor(
         get() = listOf(lhs, rhs)
 
     override fun accept(transformer: KTransformerBase): KExpr<KBoolSort> = transformer.transform(this)
+
+    override fun accept(expressionBuilder: KExprBitBuilder): LogicalExpression = expressionBuilder.transform(this)
 }
 
 class KDistinctExpr<T : KSort> internal constructor(
@@ -108,6 +121,8 @@ class KDistinctExpr<T : KSort> internal constructor(
     override fun decl(): KDistinctDecl<T> = with(ctx) { mkDistinctDecl(args.first().sort) }
 
     override fun accept(transformer: KTransformerBase): KExpr<KBoolSort> = transformer.transform(this)
+
+    override fun accept(expressionBuilder: KExprBitBuilder): LogicalExpression = expressionBuilder.transform(this)
 }
 
 class KIteExpr<T : KSort> internal constructor(
@@ -124,6 +139,8 @@ class KIteExpr<T : KSort> internal constructor(
         get() = listOf(condition, trueBranch, falseBranch)
 
     override fun accept(transformer: KTransformerBase): KExpr<T> = transformer.transform(this)
+
+    override fun accept(expressionBuilder: KExprBitBuilder): LogicalExpression = expressionBuilder.transform(this)
 }
 
 class KTrue(ctx: KContext) : KApp<KBoolSort, KExpr<*>>(ctx) {
@@ -134,6 +151,8 @@ class KTrue(ctx: KContext) : KApp<KBoolSort, KExpr<*>>(ctx) {
     override val args = emptyList<KExpr<*>>()
 
     override fun accept(transformer: KTransformerBase): KExpr<KBoolSort> = transformer.transform(this)
+
+    override fun accept(expressionBuilder: KExprBitBuilder): LogicalExpression = expressionBuilder.transform(this)
 }
 
 class KFalse(ctx: KContext) : KApp<KBoolSort, KExpr<*>>(ctx) {
@@ -144,4 +163,6 @@ class KFalse(ctx: KContext) : KApp<KBoolSort, KExpr<*>>(ctx) {
     override val args = emptyList<KExpr<*>>()
 
     override fun accept(transformer: KTransformerBase): KExpr<KBoolSort> = transformer.transform(this)
+
+    override fun accept(expressionBuilder: KExprBitBuilder): LogicalExpression = expressionBuilder.transform(this)
 }

@@ -52,8 +52,20 @@ class KExprBitBuilder(val ctx: KContext) {
         return result
     }
 
+    fun varsNumber(): Int {
+        return literalProvider.varsNumber()
+    }
+
     fun transform(expr: KExpr<*>): LogicalExpression? {
-        error("transformer is not implemented for this type of expression")
+        return expr.accept(this)
+    }
+
+    fun <T : KSort, A : KExpr<*>> transform(expr: KApp<T, A>): LogicalExpression? {
+        if (expr.args.isNotEmpty()) {
+            TODO("Do something")
+        }
+        literalProvider.expressionBits(expr)
+        return null
     }
 
     fun transform(expr: KConst<*>): LogicalExpression? {
@@ -62,11 +74,11 @@ class KExprBitBuilder(val ctx: KContext) {
     }
 
     fun transform(expr: KTrue): LogicalExpression {
-        return getBitOf(expr)
+        return TrueLiteral(getBitOf(expr).id)
     }
 
     fun transform(expr: KFalse): LogicalExpression {
-        return not(getBitOf(expr))
+        return FalseLiteral(getBitOf(expr).id)
     }
 
     fun transform(expr: KNotExpr): LogicalExpression {
@@ -115,6 +127,7 @@ class KExprBitBuilder(val ctx: KContext) {
         val equality = eq(getBitOf(expr), disjunction)
         return uniteConditions(equality, conditions)
     }
+
 
     fun <T : KSort> transform(expr: KEqExpr<T>): LogicalExpression {
         val conditions1 = transform(expr.lhs)

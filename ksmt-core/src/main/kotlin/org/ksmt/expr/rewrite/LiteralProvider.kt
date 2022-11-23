@@ -10,11 +10,13 @@ import org.ksmt.sort.KSort
 typealias Lit = Int
 
 class LiteralProvider {
-    private var bitCount: Lit = 0
+    private var bitCount: Lit = 1
 
     fun newLiteral(): Lit {
         return bitCount++
     }
+
+    fun varsNumber(): Int = bitCount - 1
 
     fun expressionBits(expr: KExpr<*>): List<SingleLiteral> {
         if (expr.expressionBits.isEmpty()) {
