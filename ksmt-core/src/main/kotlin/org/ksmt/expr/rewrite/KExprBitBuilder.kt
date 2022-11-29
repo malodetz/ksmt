@@ -155,17 +155,13 @@ class KExprBitBuilder(val ctx: KContext, builderId: String) : Builder(builderId)
         equalities1.forEachIndexed { i, t -> makeEq(t, c[i], a[i]) }
         val x = literalProvider.newLiteral()
         makeAnd(x, equalities1)
-        val t1 = literalProvider.newLiteral()
-        makeImplies(t1, p, x)
-        cnf.add(mutableListOf(t1))
+        cnf.add(mutableListOf(-p, x))
 
         val equalities2 = literalProvider.makeBits(expr)
         equalities2.forEachIndexed { i, t -> makeEq(t, c[i], b[i]) }
         val y = literalProvider.newLiteral()
         makeAnd(y, equalities2)
-        val t2 = literalProvider.newLiteral()
-        makeImplies(t2, -p, y)
-        cnf.add(mutableListOf(t2))
+        cnf.add(mutableListOf(p, y))
 
         return c
     }

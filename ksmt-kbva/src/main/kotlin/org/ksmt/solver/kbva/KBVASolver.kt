@@ -38,14 +38,11 @@ open class KBVASolver(private val ctx: KContext) : KSolver {
 
     override fun check(timeout: Duration): KSolverStatus {
         val solver = Kosat(currentCNF, currentCNF.maxOf { list -> list.maxOf { it } })
-        val result = solver.solve()
-        println(currentCNF)
-        println(solver.getModel())
-//        val result = runBlocking {
-//            withTimeoutOrNull(timeout.inWholeMilliseconds) {
-//                solver.solve()
-//            }
-//        } ?: return KSolverStatus.UNKNOWN
+        val result = runBlocking {
+            withTimeoutOrNull(timeout.inWholeMilliseconds) {
+                solver.solve()
+            }
+        } ?: return KSolverStatus.UNKNOWN
         return if (result) {
             KSolverStatus.SAT
         } else {
