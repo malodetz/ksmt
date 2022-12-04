@@ -11,7 +11,7 @@ import org.ksmt.decl.KArithMulDecl
 import org.ksmt.decl.KArithPowerDecl
 import org.ksmt.decl.KArithSubDecl
 import org.ksmt.decl.KArithUnaryMinusDecl
-import org.ksmt.expr.transformer.KTransformerBase
+import org.ksmt.expr.rewrite.KVisitor
 import org.ksmt.sort.KArithSort
 import org.ksmt.sort.KBoolSort
 
@@ -27,7 +27,7 @@ class KAddArithExpr<T : KArithSort<T>> internal constructor(
 
     override fun decl(): KArithAddDecl<T> = with(ctx) { mkArithAddDecl(sort) }
 
-    override fun accept(transformer: KTransformerBase): KExpr<T> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 class KMulArithExpr<T : KArithSort<T>> internal constructor(
@@ -42,7 +42,7 @@ class KMulArithExpr<T : KArithSort<T>> internal constructor(
 
     override fun decl(): KArithMulDecl<T> = with(ctx) { mkArithMulDecl(sort) }
 
-    override fun accept(transformer: KTransformerBase): KExpr<T> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 class KSubArithExpr<T : KArithSort<T>> internal constructor(
@@ -57,7 +57,7 @@ class KSubArithExpr<T : KArithSort<T>> internal constructor(
 
     override fun decl(): KArithSubDecl<T> = with(ctx) { mkArithSubDecl(sort) }
 
-    override fun accept(transformer: KTransformerBase): KExpr<T> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 class KUnaryMinusArithExpr<T : KArithSort<T>> internal constructor(
@@ -71,7 +71,7 @@ class KUnaryMinusArithExpr<T : KArithSort<T>> internal constructor(
     override val args: List<KExpr<T>>
         get() = listOf(arg)
 
-    override fun accept(transformer: KTransformerBase): KExpr<T> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 class KDivArithExpr<T : KArithSort<T>> internal constructor(
@@ -86,7 +86,7 @@ class KDivArithExpr<T : KArithSort<T>> internal constructor(
     override val args: List<KExpr<T>>
         get() = listOf(lhs, rhs)
 
-    override fun accept(transformer: KTransformerBase): KExpr<T> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 class KPowerArithExpr<T : KArithSort<T>> internal constructor(
@@ -101,7 +101,7 @@ class KPowerArithExpr<T : KArithSort<T>> internal constructor(
     override val args: List<KExpr<T>>
         get() = listOf(lhs, rhs)
 
-    override fun accept(transformer: KTransformerBase): KExpr<T> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 class KLtArithExpr<T : KArithSort<T>> internal constructor(
@@ -116,7 +116,7 @@ class KLtArithExpr<T : KArithSort<T>> internal constructor(
     override val args: List<KExpr<T>>
         get() = listOf(lhs, rhs)
 
-    override fun accept(transformer: KTransformerBase): KExpr<KBoolSort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 class KLeArithExpr<T : KArithSort<T>> internal constructor(
@@ -131,7 +131,7 @@ class KLeArithExpr<T : KArithSort<T>> internal constructor(
     override val args: List<KExpr<T>>
         get() = listOf(lhs, rhs)
 
-    override fun accept(transformer: KTransformerBase): KExpr<KBoolSort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 class KGtArithExpr<T : KArithSort<T>> internal constructor(
@@ -146,7 +146,7 @@ class KGtArithExpr<T : KArithSort<T>> internal constructor(
     override val args: List<KExpr<T>>
         get() = listOf(lhs, rhs)
 
-    override fun accept(transformer: KTransformerBase): KExpr<KBoolSort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 class KGeArithExpr<T : KArithSort<T>> internal constructor(
@@ -161,5 +161,5 @@ class KGeArithExpr<T : KArithSort<T>> internal constructor(
     override val args: List<KExpr<T>>
         get() = listOf(lhs, rhs)
 
-    override fun accept(transformer: KTransformerBase): KExpr<KBoolSort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }

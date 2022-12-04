@@ -4,7 +4,7 @@ import org.ksmt.KContext
 import org.ksmt.decl.KArrayConstDecl
 import org.ksmt.decl.KDecl
 import org.ksmt.decl.KFuncDecl
-import org.ksmt.expr.transformer.KTransformerBase
+import org.ksmt.expr.rewrite.KVisitor
 import org.ksmt.sort.KArraySort
 import org.ksmt.sort.KSort
 
@@ -21,7 +21,7 @@ class KArrayStore<D : KSort, R : KSort> internal constructor(
     override val args: List<KExpr<*>>
         get() = listOf(array, index, value)
 
-    override fun accept(transformer: KTransformerBase): KExpr<KArraySort<D, R>> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 class KArraySelect<D : KSort, R : KSort> internal constructor(
@@ -36,7 +36,7 @@ class KArraySelect<D : KSort, R : KSort> internal constructor(
     override val args: List<KExpr<*>>
         get() = listOf(array, index)
 
-    override fun accept(transformer: KTransformerBase): KExpr<R> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 class KArrayConst<D : KSort, R : KSort> internal constructor(
@@ -51,7 +51,7 @@ class KArrayConst<D : KSort, R : KSort> internal constructor(
     override val args: List<KExpr<R>>
         get() = listOf(value)
 
-    override fun accept(transformer: KTransformerBase): KExpr<KArraySort<D, R>> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 class KFunctionAsArray<D : KSort, R : KSort> internal constructor(
@@ -76,7 +76,7 @@ class KFunctionAsArray<D : KSort, R : KSort> internal constructor(
         append(')')
     }
 
-    override fun accept(transformer: KTransformerBase): KExpr<KArraySort<D, R>> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 /** Array lambda binding.
@@ -103,5 +103,5 @@ class KArrayLambda<D : KSort, R : KSort> internal constructor(
         append(')')
     }
 
-    override fun accept(transformer: KTransformerBase): KExpr<KArraySort<D, R>> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }

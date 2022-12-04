@@ -5,7 +5,7 @@ import org.ksmt.decl.KIntModDecl
 import org.ksmt.decl.KIntNumDecl
 import org.ksmt.decl.KIntRemDecl
 import org.ksmt.decl.KIntToRealDecl
-import org.ksmt.expr.transformer.KTransformerBase
+import org.ksmt.expr.rewrite.KVisitor
 import org.ksmt.sort.KIntSort
 import org.ksmt.sort.KRealSort
 import java.math.BigInteger
@@ -22,7 +22,7 @@ class KModIntExpr internal constructor(
     override val args: List<KExpr<KIntSort>>
         get() = listOf(lhs, rhs)
 
-    override fun accept(transformer: KTransformerBase): KExpr<KIntSort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 class KRemIntExpr internal constructor(
@@ -37,7 +37,7 @@ class KRemIntExpr internal constructor(
     override val args: List<KExpr<KIntSort>>
         get() = listOf(lhs, rhs)
 
-    override fun accept(transformer: KTransformerBase): KExpr<KIntSort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 class KToRealIntExpr internal constructor(
@@ -51,7 +51,7 @@ class KToRealIntExpr internal constructor(
     override val args: List<KExpr<KIntSort>>
         get() = listOf(arg)
 
-    override fun accept(transformer: KTransformerBase): KExpr<KRealSort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 abstract class KIntNumExpr(
@@ -69,19 +69,19 @@ class KInt32NumExpr internal constructor(
     ctx: KContext,
     val value: Int
 ) : KIntNumExpr(ctx, value) {
-    override fun accept(transformer: KTransformerBase): KExpr<KIntSort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 class KInt64NumExpr internal constructor(
     ctx: KContext,
     val value: Long
 ) : KIntNumExpr(ctx, value) {
-    override fun accept(transformer: KTransformerBase): KExpr<KIntSort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 class KIntBigNumExpr internal constructor(
     ctx: KContext,
     val value: BigInteger
 ) : KIntNumExpr(ctx, value) {
-    override fun accept(transformer: KTransformerBase): KExpr<KIntSort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }

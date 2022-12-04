@@ -2,8 +2,7 @@ package org.ksmt.expr
 
 import org.ksmt.KContext
 import org.ksmt.decl.KDecl
-import org.ksmt.expr.rewrite.Builder
-import org.ksmt.expr.transformer.KTransformerBase
+import org.ksmt.expr.rewrite.KVisitor
 import org.ksmt.sort.KSort
 
 abstract class KApp<T : KSort, A : KExpr<*>> internal constructor(ctx: KContext) : KExpr<T>(ctx) {
@@ -30,7 +29,6 @@ abstract class KApp<T : KSort, A : KExpr<*>> internal constructor(ctx: KContext)
         }
     }
 
-    override fun accept(builder: Builder): Any = builder.transform(this)
 }
 
 open class KFunctionApp<T : KSort> internal constructor(
@@ -42,16 +40,13 @@ open class KFunctionApp<T : KSort> internal constructor(
 
     override fun decl(): KDecl<T> = decl
 
-    override fun accept(transformer: KTransformerBase): KExpr<T> = transformer.transform(this)
-
-    override fun accept(builder: Builder): Any = builder.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 class KConst<T : KSort> internal constructor(
     ctx: KContext,
     decl: KDecl<T>
 ) : KFunctionApp<T>(ctx, decl, args = emptyList()) {
-    override fun accept(transformer: KTransformerBase): KExpr<T> = transformer.transform(this)
 
-    override fun accept(builder: Builder): Any = builder.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }

@@ -149,7 +149,7 @@ import org.ksmt.sort.KRealSort
 import org.ksmt.sort.KSort
 
 
-interface KTransformerBase {
+interface KTransformerBase  {
     fun transform(expr: KExpr<*>): Any = error("transformer is not implemented for expr $expr")
 
     // function transformers

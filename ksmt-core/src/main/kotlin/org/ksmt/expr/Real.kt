@@ -4,7 +4,7 @@ import org.ksmt.KContext
 import org.ksmt.decl.KRealIsIntDecl
 import org.ksmt.decl.KRealNumDecl
 import org.ksmt.decl.KRealToIntDecl
-import org.ksmt.expr.transformer.KTransformerBase
+import org.ksmt.expr.rewrite.KVisitor
 import org.ksmt.sort.KBoolSort
 import org.ksmt.sort.KIntSort
 import org.ksmt.sort.KRealSort
@@ -20,7 +20,7 @@ class KToIntRealExpr internal constructor(
     override val args: List<KExpr<KRealSort>>
         get() = listOf(arg)
 
-    override fun accept(transformer: KTransformerBase): KExpr<KIntSort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 class KIsIntRealExpr internal constructor(
@@ -34,7 +34,7 @@ class KIsIntRealExpr internal constructor(
     override val args: List<KExpr<KRealSort>>
         get() = listOf(arg)
 
-    override fun accept(transformer: KTransformerBase): KExpr<KBoolSort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 class KRealNumExpr internal constructor(
@@ -48,5 +48,5 @@ class KRealNumExpr internal constructor(
 
     override val args = emptyList<KExpr<*>>()
 
-    override fun accept(transformer: KTransformerBase): KExpr<KRealSort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }

@@ -2,10 +2,13 @@ package org.ksmt.expr.rewrite
 
 import org.ksmt.KContext
 import org.ksmt.expr.*
+import org.ksmt.sort.KArithSort
+import org.ksmt.sort.KBvSort
+import org.ksmt.sort.KFpSort
 import org.ksmt.sort.KSort
 
 @Suppress("UNCHECKED_CAST")
-class KExprBitBuilder(val ctx: KContext, builderId: String) : Builder(builderId) {
+class KExprBitBuilder(val ctx: KContext, builderId: String) : KVisitor(builderId) {
 
     val cnf: MutableList<List<Lit>> = mutableListOf()
 
@@ -49,9 +52,13 @@ class KExprBitBuilder(val ctx: KContext, builderId: String) : Builder(builderId)
         cnf.add(mutableListOf(-b, c))
     }
 
-    override fun <T : KSort, A : KExpr<*>> transform(kApp: KApp<T, A>): MutableList<Lit> {
+    fun <T : KSort, A : KExpr<*>> transform(kApp: KApp<T, A>): MutableList<Lit> {
         // TODO  Something with args
         return literalProvider.makeBits(kApp)
+    }
+
+    override fun <T : KSort> transform(expr: KFunctionApp<T>): Any {
+        TODO("Not yet implemented")
     }
 
     override fun transform(expr: KConst<*>): MutableList<Lit> {
@@ -164,6 +171,470 @@ class KExprBitBuilder(val ctx: KContext, builderId: String) : Builder(builderId)
         cnf.add(mutableListOf(p, y))
 
         return c
+    }
+
+    override fun transform(expr: KBitVec1Value): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun transform(expr: KBitVec8Value): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun transform(expr: KBitVec16Value): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun transform(expr: KBitVec32Value): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun transform(expr: KBitVec64Value): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun transform(expr: KBitVecCustomValue): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KBvSort> transform(expr: KBvNotExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KBvSort> transform(expr: KBvReductionAndExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KBvSort> transform(expr: KBvReductionOrExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KBvSort> transform(expr: KBvAndExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KBvSort> transform(expr: KBvOrExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KBvSort> transform(expr: KBvXorExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KBvSort> transform(expr: KBvNAndExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KBvSort> transform(expr: KBvNorExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KBvSort> transform(expr: KBvXNorExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KBvSort> transform(expr: KBvNegationExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KBvSort> transform(expr: KBvAddExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KBvSort> transform(expr: KBvSubExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KBvSort> transform(expr: KBvMulExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KBvSort> transform(expr: KBvUnsignedDivExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KBvSort> transform(expr: KBvSignedDivExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KBvSort> transform(expr: KBvUnsignedRemExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KBvSort> transform(expr: KBvSignedRemExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KBvSort> transform(expr: KBvSignedModExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KBvSort> transform(expr: KBvUnsignedLessExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KBvSort> transform(expr: KBvSignedLessExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KBvSort> transform(expr: KBvUnsignedLessOrEqualExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KBvSort> transform(expr: KBvSignedLessOrEqualExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KBvSort> transform(expr: KBvUnsignedGreaterOrEqualExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KBvSort> transform(expr: KBvSignedGreaterOrEqualExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KBvSort> transform(expr: KBvUnsignedGreaterExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KBvSort> transform(expr: KBvSignedGreaterExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun transform(expr: KBvConcatExpr): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun transform(expr: KBvExtractExpr): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun transform(expr: KBvSignExtensionExpr): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun transform(expr: KBvZeroExtensionExpr): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun transform(expr: KBvRepeatExpr): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KBvSort> transform(expr: KBvShiftLeftExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KBvSort> transform(expr: KBvLogicalShiftRightExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KBvSort> transform(expr: KBvArithShiftRightExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KBvSort> transform(expr: KBvRotateLeftExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KBvSort> transform(expr: KBvRotateLeftIndexedExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KBvSort> transform(expr: KBvRotateRightExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KBvSort> transform(expr: KBvRotateRightIndexedExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun transform(expr: KBv2IntExpr): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KBvSort> transform(expr: KBvAddNoOverflowExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KBvSort> transform(expr: KBvAddNoUnderflowExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KBvSort> transform(expr: KBvSubNoOverflowExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KBvSort> transform(expr: KBvSubNoUnderflowExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KBvSort> transform(expr: KBvDivNoOverflowExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KBvSort> transform(expr: KBvNegNoOverflowExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KBvSort> transform(expr: KBvMulNoOverflowExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KBvSort> transform(expr: KBvMulNoUnderflowExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun transform(expr: KFp16Value): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun transform(expr: KFp32Value): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun transform(expr: KFp64Value): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun transform(expr: KFp128Value): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun transform(expr: KFpCustomSizeValue): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun transform(expr: KFpRoundingModeExpr): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KFpSort> transform(expr: KFpAbsExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KFpSort> transform(expr: KFpNegationExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KFpSort> transform(expr: KFpAddExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KFpSort> transform(expr: KFpSubExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KFpSort> transform(expr: KFpMulExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KFpSort> transform(expr: KFpDivExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KFpSort> transform(expr: KFpFusedMulAddExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KFpSort> transform(expr: KFpSqrtExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KFpSort> transform(expr: KFpRemExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KFpSort> transform(expr: KFpRoundToIntegralExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KFpSort> transform(expr: KFpMinExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KFpSort> transform(expr: KFpMaxExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KFpSort> transform(expr: KFpLessOrEqualExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KFpSort> transform(expr: KFpLessExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KFpSort> transform(expr: KFpGreaterOrEqualExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KFpSort> transform(expr: KFpGreaterExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KFpSort> transform(expr: KFpEqualExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KFpSort> transform(expr: KFpIsNormalExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KFpSort> transform(expr: KFpIsSubnormalExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KFpSort> transform(expr: KFpIsZeroExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KFpSort> transform(expr: KFpIsInfiniteExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KFpSort> transform(expr: KFpIsNaNExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KFpSort> transform(expr: KFpIsNegativeExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KFpSort> transform(expr: KFpIsPositiveExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KFpSort> transform(expr: KFpToBvExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KFpSort> transform(expr: KFpToRealExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KFpSort> transform(expr: KFpToIEEEBvExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KFpSort> transform(expr: KFpFromBvExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KFpSort> transform(expr: KFpToFpExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KFpSort> transform(expr: KRealToFpExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KFpSort> transform(expr: KBvToFpExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <D : KSort, R : KSort> transform(expr: KArrayStore<D, R>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <D : KSort, R : KSort> transform(expr: KArraySelect<D, R>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <D : KSort, R : KSort> transform(expr: KArrayConst<D, R>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <D : KSort, R : KSort> transform(expr: KFunctionAsArray<D, R>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <D : KSort, R : KSort> transform(expr: KArrayLambda<D, R>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KArithSort<T>> transform(expr: KAddArithExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KArithSort<T>> transform(expr: KMulArithExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KArithSort<T>> transform(expr: KSubArithExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KArithSort<T>> transform(expr: KUnaryMinusArithExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KArithSort<T>> transform(expr: KDivArithExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KArithSort<T>> transform(expr: KPowerArithExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KArithSort<T>> transform(expr: KLtArithExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KArithSort<T>> transform(expr: KLeArithExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KArithSort<T>> transform(expr: KGtArithExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : KArithSort<T>> transform(expr: KGeArithExpr<T>): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun transform(expr: KModIntExpr): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun transform(expr: KRemIntExpr): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun transform(expr: KToRealIntExpr): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun transform(expr: KInt32NumExpr): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun transform(expr: KInt64NumExpr): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun transform(expr: KIntBigNumExpr): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun transform(expr: KToIntRealExpr): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun transform(expr: KIsIntRealExpr): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun transform(expr: KRealNumExpr): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun transform(expr: KExistentialQuantifier): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun transform(expr: KUniversalQuantifier): Any {
+        TODO("Not yet implemented")
     }
 
 }
