@@ -6,7 +6,7 @@ import org.ksmt.sort.*
 abstract class KVisitor(val visitorId: String) {
 
     abstract fun <T : KSort> transform(expr: KFunctionApp<T>): Any
-    abstract fun transform(expr: KConst<*>): Any
+    abstract fun <T : KSort> transform(expr: KConst<T>): Any
 
     abstract fun transform(expr: KAndExpr): Any
     abstract fun transform(expr: KOrExpr): Any

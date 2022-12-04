@@ -30,17 +30,17 @@ import org.ksmt.sort.KSort
 import org.ksmt.sort.KSortVisitor
 import org.ksmt.sort.KUninterpretedSort
 
-@Suppress("TooManyFunctions")
+@Suppress("TooManyFunctions", "UNCHECKED_CAST")
 open class KModelEvaluator(
     override val ctx: KContext,
     private val model: KModel,
     private val isComplete: Boolean
-) : KTransformer {
+) : KTransformer() {
     val evaluatedExpressions: MutableMap<KExpr<*>, KExpr<*>> = hashMapOf()
 
     private val evaluatedFunctions: MutableMap<KExpr<*>, KExpr<*>> = hashMapOf()
 
-    fun <T : KSort> KExpr<T>.eval(): KExpr<T> = accept(this@KModelEvaluator)
+    fun <T : KSort> KExpr<T>.eval(): KExpr<T> = accept(this@KModelEvaluator) as KExpr<T>
 
     override fun <T : KSort> transform(expr: KFunctionApp<T>): KExpr<T> = expr.evalFunction()
     override fun <T : KSort> transform(expr: KConst<T>): KExpr<T> = expr.evalFunction()

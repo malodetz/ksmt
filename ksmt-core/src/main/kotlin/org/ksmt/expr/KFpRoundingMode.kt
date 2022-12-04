@@ -2,7 +2,7 @@ package org.ksmt.expr
 
 import org.ksmt.KContext
 import org.ksmt.decl.KDecl
-import org.ksmt.expr.transformer.KTransformerBase
+import org.ksmt.expr.rewrite.KVisitor
 import org.ksmt.sort.KFpRoundingModeSort
 
 enum class KFpRoundingMode(val modeName: String) {
@@ -24,5 +24,5 @@ class KFpRoundingModeExpr(
 
     override fun sort(): KFpRoundingModeSort = ctx.mkFpRoundingModeSort()
 
-    override fun accept(transformer: KTransformerBase): KExpr<KFpRoundingModeSort> = transformer.transform(this)
+    override fun accept(visitor : KVisitor): Any = visitor.transform(this)
 }

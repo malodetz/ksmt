@@ -58,10 +58,11 @@ class KExprBitBuilder(val ctx: KContext, builderId: String) : KVisitor(builderId
     }
 
     override fun <T : KSort> transform(expr: KFunctionApp<T>): Any {
-        TODO("Not yet implemented")
+        // TODO  Something with args
+        return literalProvider.makeBits(expr)
     }
 
-    override fun transform(expr: KConst<*>): MutableList<Lit> {
+    override fun <T : KSort> transform(expr: KConst<T>): MutableList<Lit> {
         return literalProvider.makeBits(expr)
     }
 

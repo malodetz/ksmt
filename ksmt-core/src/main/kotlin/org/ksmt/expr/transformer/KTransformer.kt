@@ -134,6 +134,7 @@ import org.ksmt.expr.KTrue
 import org.ksmt.expr.KUnaryMinusArithExpr
 import org.ksmt.expr.KUniversalQuantifier
 import org.ksmt.expr.KXorExpr
+import org.ksmt.expr.rewrite.KVisitor
 import org.ksmt.sort.KArithSort
 import org.ksmt.sort.KArraySort
 import org.ksmt.sort.KBoolSort
@@ -152,25 +153,25 @@ import org.ksmt.sort.KFpSort
 import org.ksmt.sort.KIntSort
 import org.ksmt.sort.KRealSort
 import org.ksmt.sort.KSort
+import java.util.*
 
 
-interface KTransformer : KTransformerBase {
-    val ctx: KContext
+@Suppress("UNCHECKED_CAST")
+abstract class KTransformer : KVisitor(UUID.randomUUID().toString()) {
+    abstract val ctx: KContext
 
-    override fun transform(expr: KExpr<*>): Any = error("transformer is not implemented for expr $expr")
-
-    fun <T : KSort> transformExpr(expr: KExpr<T>): KExpr<T> = expr
+    open fun <T : KSort> transformExpr(expr: KExpr<T>): KExpr<T> = expr
 
     // function transformers
     override fun <T : KSort> transform(expr: KFunctionApp<T>): KExpr<T> = transformApp(expr)
     override fun <T : KSort> transform(expr: KConst<T>): KExpr<T> = transform(expr as KFunctionApp<T>)
-    fun <T : KSort> transformApp(expr: KApp<T, *>): KExpr<T> = with(ctx) {
+    open fun <T : KSort> transformApp(expr: KApp<T, *>): KExpr<T> = with(ctx) {
         val args = expr.args.map { it.accept(this@KTransformer) }
 
         return if (args == expr.args) {
             transformExpr(expr)
         } else {
-            transformExpr(mkApp(expr.decl, args))
+            transformExpr(mkApp(expr.decl, args as List<KExpr<*>>))
         }
     }
 
@@ -187,7 +188,7 @@ interface KTransformer : KTransformerBase {
     override fun <T : KSort> transform(expr: KIteExpr<T>): KExpr<T> = transformApp(expr)
 
     // bit-vec transformers
-    fun <T : KBvSort> transformBitVecValue(expr: KBitVecValue<T>): KExpr<T> = transformApp(expr)
+    open fun <T : KBvSort> transformBitVecValue(expr: KBitVecValue<T>): KExpr<T> = transformApp(expr)
     override fun transform(expr: KBitVec1Value): KExpr<KBv1Sort> = transformBitVecValue(expr)
     override fun transform(expr: KBitVec8Value): KExpr<KBv8Sort> = transformBitVecValue(expr)
     override fun transform(expr: KBitVec16Value): KExpr<KBv16Sort> = transformBitVecValue(expr)
@@ -301,7 +302,7 @@ interface KTransformer : KTransformerBase {
     override fun <D : KSort, R : KSort> transform(expr: KArrayLambda<D, R>): KExpr<KArraySort<D, R>> = with(ctx) {
         val body = expr.body.accept(this@KTransformer)
         if (body == expr.body) return transformExpr(expr)
-        return transformExpr(mkArrayLambda(expr.indexVarDecl, body))
+        return transformExpr(mkArrayLambda(expr.indexVarDecl, body as KExpr<R>))
     }
 
     // arith transformers
@@ -321,7 +322,7 @@ interface KTransformer : KTransformerBase {
     override fun transform(expr: KRemIntExpr): KExpr<KIntSort> = transformApp(expr)
     override fun transform(expr: KToRealIntExpr): KExpr<KRealSort> = transformApp(expr)
 
-    fun transformIntNum(expr: KIntNumExpr): KExpr<KIntSort> = transformApp(expr)
+    open fun transformIntNum(expr: KIntNumExpr): KExpr<KIntSort> = transformApp(expr)
     override fun transform(expr: KInt32NumExpr): KExpr<KIntSort> = transformIntNum(expr)
     override fun transform(expr: KInt64NumExpr): KExpr<KIntSort> = transformIntNum(expr)
     override fun transform(expr: KIntBigNumExpr): KExpr<KIntSort> = transformIntNum(expr)
@@ -338,7 +339,7 @@ interface KTransformer : KTransformerBase {
         return if (body == expr.body) {
             transformExpr(expr)
         } else {
-            transformExpr(mkExistentialQuantifier(body, expr.bounds))
+            transformExpr(mkExistentialQuantifier(body as KExpr<KBoolSort>, expr.bounds))
         }
     }
 
@@ -348,7 +349,7 @@ interface KTransformer : KTransformerBase {
         return if (body == expr.body) {
             transformExpr(expr)
         } else {
-            transformExpr(mkUniversalQuantifier(body, expr.bounds))
+            transformExpr(mkUniversalQuantifier(body as KExpr<KBoolSort>, expr.bounds))
         }
     }
 }
