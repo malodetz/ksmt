@@ -4,6 +4,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.ksmt.KContext
+import org.ksmt.expr.KBitVec32Value
 import org.ksmt.expr.KBitVec64Value
 import org.ksmt.expr.KExpr
 import org.ksmt.sort.KBv64Sort
@@ -185,4 +186,34 @@ class BitVecTest {
 
     @Test
     fun testAddExpr(): Unit = testBinaryOperation(context::mkBvAddExpr, Long::plus)
+
+    @Test
+    fun testNegationExpr(): Unit = with(context) {
+        val (negativeValue, positiveValue) = createTwoRandomLongValues()
+
+        val negativeBv = negativeValue.toBv()
+        val positiveBv = positiveValue.toBv()
+        val zero = 0.toBv()
+
+        val negNegativeValue = mkBv64Sort().mkConst("neg_negative_value")
+        val negPositiveValue = mkBv64Sort().mkConst("neg_positive_value")
+        val zeroValue = mkBv32Sort().mkConst("zero_value")
+
+        solver.assert(mkBvNegationExpr(negativeBv) eq negNegativeValue)
+        solver.assert(mkBvNegationExpr(positiveBv) eq negPositiveValue)
+        solver.assert(mkBvNegationExpr(zero) eq zeroValue)
+
+        solver.check()
+        val model = solver.model()
+
+        val evaluatedNegNegativeBv = model.eval(negNegativeValue) as KBitVec64Value
+        val evaluatedNegPositiveBv = model.eval(negPositiveValue) as KBitVec64Value
+        val evaluatedZeroValue = model.eval(zeroValue) as KBitVec32Value
+
+        val message = "NegativeValue: $negativeValue, positiveValue: $positiveValue"
+
+        assertEquals(-negativeValue, evaluatedNegNegativeBv.numberValue, message)
+        assertEquals(-positiveValue, evaluatedNegPositiveBv.numberValue, message)
+        assertEquals(expected = 0, evaluatedZeroValue.numberValue, message)
+    }
 }

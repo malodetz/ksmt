@@ -295,7 +295,26 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
     }
 
     override fun <T : KBvSort> transform(expr: KBvNegationExpr<T>): Any {
-        TODO("Not yet implemented")
+        val a = getBitsOf(expr.value).asReversed()
+        val c = literalProvider.makeBits(expr)
+        val n = c.size
+        val inv = a.map{
+            val bit = literalProvider.newLiteral()
+            makeNot(bit, it)
+            bit
+        }.toMutableList()
+        val b = mutableListOf<Lit>()
+        for (i in 1..n) {
+            val lit = literalProvider.newLiteral()
+            b.add(lit)
+            if (i == 1) {
+                cnf.add(mutableListOf(lit))
+            } else {
+                cnf.add(mutableListOf(-lit))
+            }
+        }
+        makeAdd(n, inv, b, c)
+        return c.asReversed()
     }
 
     override fun <T : KBvSort> transform(expr: KBvAddExpr<T>): Any {
@@ -303,6 +322,18 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
         val b = getBitsOf(expr.arg1).asReversed()
         val c = literalProvider.makeBits(expr)
         val n = c.size
+
+        makeAdd(n, a, b, c)
+
+        return c.asReversed()
+    }
+
+    private fun makeAdd(
+        n: Int,
+        a: MutableList<Lit>,
+        b: MutableList<Lit>,
+        c: MutableList<Lit>
+    ) {
         val carry = mutableListOf<Lit>()
         for (i in 1..n) {
             carry.add(literalProvider.newLiteral())
@@ -323,8 +354,6 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
             makeXor(a4, a[i], b[i])
             makeXor(c[i], a4, carry[i - 1])
         }
-
-        return c.asReversed()
     }
 
     override fun <T : KBvSort> transform(expr: KBvSubExpr<T>): Any {
