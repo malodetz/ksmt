@@ -182,4 +182,7 @@ class BitVecTest {
     fun testXNorExpr(): Unit = testBinaryOperation(context::mkBvXNorExpr) { arg0: Long, arg1: Long ->
         (arg0 xor arg1).inv()
     }
+
+    @Test
+    fun testAddExpr(): Unit = testBinaryOperation(context::mkBvAddExpr, Long::plus)
 }

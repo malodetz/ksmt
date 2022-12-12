@@ -299,7 +299,32 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
     }
 
     override fun <T : KBvSort> transform(expr: KBvAddExpr<T>): Any {
-        TODO("Not yet implemented")
+        val a = getBitsOf(expr.arg0).asReversed()
+        val b = getBitsOf(expr.arg1).asReversed()
+        val c = literalProvider.makeBits(expr)
+        val n = c.size
+        val carry = mutableListOf<Lit>()
+        for (i in 1..n) {
+            carry.add(literalProvider.newLiteral())
+        }
+
+        makeAnd(carry[0], mutableListOf(a[0], b[0]))
+        makeXor(c[0], a[0], b[0])
+        for (i in 1 until n) {
+            val a1 = literalProvider.newLiteral()
+            val a2 = literalProvider.newLiteral()
+            val a3 = literalProvider.newLiteral()
+            makeAnd(a1, mutableListOf(a[i], b[i]))
+            makeAnd(a2, mutableListOf(a[i], carry[i - 1]))
+            makeAnd(a3, mutableListOf(carry[i - 1], b[i]))
+            makeOr(carry[i], mutableListOf(a1, a2, a3))
+
+            val a4 = literalProvider.newLiteral()
+            makeXor(a4, a[i], b[i])
+            makeXor(c[i], a4, carry[i - 1])
+        }
+
+        return c.asReversed()
     }
 
     override fun <T : KBvSort> transform(expr: KBvSubExpr<T>): Any {
@@ -329,6 +354,11 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
     override fun <T : KBvSort> transform(expr: KBvSignedModExpr<T>): Any {
         TODO("Not yet implemented")
     }
+
+    /**
+     *
+     */
+
 
     override fun <T : KBvSort> transform(expr: KBvUnsignedLessExpr<T>): Any {
         TODO("Not yet implemented")
@@ -362,6 +392,10 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
         TODO("Not yet implemented")
     }
 
+    /*
+    *
+    *
+    * */
     override fun transform(expr: KBvConcatExpr): Any {
         TODO("Not yet implemented")
     }
@@ -414,6 +448,11 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
         TODO("Not yet implemented")
     }
 
+    /*
+    *
+    *
+    * */
+
     override fun <T : KBvSort> transform(expr: KBvAddNoOverflowExpr<T>): Any {
         TODO("Not yet implemented")
     }
@@ -445,6 +484,7 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
     override fun <T : KBvSort> transform(expr: KBvMulNoUnderflowExpr<T>): Any {
         TODO("Not yet implemented")
     }
+
 
     override fun transform(expr: KFp16Value): Any {
         TODO("Not yet implemented")
