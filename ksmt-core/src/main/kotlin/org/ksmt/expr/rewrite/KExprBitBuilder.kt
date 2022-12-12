@@ -8,11 +8,11 @@ import org.ksmt.sort.KFpSort
 import org.ksmt.sort.KSort
 
 @Suppress("UNCHECKED_CAST")
-class KExprBitBuilder(val ctx: KContext, builderId: String) : KVisitor(builderId) {
+class KExprBitBuilder(private val ctx: KContext, private val literalProvider: LiteralProvider, builderId: String) :
+    KVisitor(builderId) {
 
     val cnf: MutableList<List<Lit>> = mutableListOf()
 
-    private val literalProvider: LiteralProvider = LiteralProvider()
 
     private fun getBitsOf(expr: KExpr<*>): MutableList<Lit> {
         return expr.cachedAccept(this) as MutableList<Lit>
@@ -23,6 +23,11 @@ class KExprBitBuilder(val ctx: KContext, builderId: String) : KVisitor(builderId
         bits.forEach { clause.add(-it) }
         cnf.add(clause)
         bits.forEach { cnf.add(mutableListOf(it, -c)) }
+    }
+
+    private fun makeNot(c: Lit, a: Lit) {
+        cnf.add(mutableListOf(-a, -c))
+        cnf.add(mutableListOf(a, c))
     }
 
     private fun makeOr(c: Lit, bits: List<Lit>) {
@@ -50,6 +55,18 @@ class KExprBitBuilder(val ctx: KContext, builderId: String) : KVisitor(builderId
         cnf.add(mutableListOf(-a, b, -c))
         cnf.add(mutableListOf(a, c))
         cnf.add(mutableListOf(-b, c))
+    }
+
+    private fun makeNand(c: Lit, a: Lit, b: Lit) {
+        cnf.add(mutableListOf(-a, -b, -c))
+        cnf.add(mutableListOf(a, c))
+        cnf.add(mutableListOf(b, c))
+    }
+
+    private fun makeNor(c: Lit, a: Lit, b: Lit) {
+        cnf.add(mutableListOf(a, b, c))
+        cnf.add(mutableListOf(-a, -c))
+        cnf.add(mutableListOf(-b, -c))
     }
 
     fun <T : KSort, A : KExpr<*>> transform(kApp: KApp<T, A>): MutableList<Lit> {
@@ -86,9 +103,7 @@ class KExprBitBuilder(val ctx: KContext, builderId: String) : KVisitor(builderId
         val a = getBitsOf(expr.arg).first()
         val p = literalProvider.makeBits(expr)
         val c = p.first()
-
-        cnf.add(mutableListOf(-a, -c))
-        cnf.add(mutableListOf(a, c))
+        makeNot(c, a)
         return p
     }
 
@@ -97,7 +112,6 @@ class KExprBitBuilder(val ctx: KContext, builderId: String) : KVisitor(builderId
         val b = getBitsOf(expr.q).first()
         val p = literalProvider.makeBits(expr)
         val c = p.first()
-
         makeImplies(c, a, b)
         return p
     }
@@ -174,64 +188,110 @@ class KExprBitBuilder(val ctx: KContext, builderId: String) : KVisitor(builderId
         return c
     }
 
+    private fun makeBvFromStringValue(expr: KBitVecValue<*>): List<Lit> {
+        val a = literalProvider.makeBits(expr)
+        a.forEachIndexed { index, lit ->
+            if (expr.stringValue[index] == '1') {
+                cnf.add(mutableListOf(lit))
+            } else {
+                cnf.add(mutableListOf(-lit))
+            }
+        }
+        return a
+    }
+
+
     override fun transform(expr: KBitVec1Value): Any {
-        TODO("Not yet implemented")
+        return makeBvFromStringValue(expr)
     }
 
     override fun transform(expr: KBitVec8Value): Any {
-        TODO("Not yet implemented")
+        return makeBvFromStringValue(expr)
     }
 
     override fun transform(expr: KBitVec16Value): Any {
-        TODO("Not yet implemented")
+        return makeBvFromStringValue(expr)
     }
 
     override fun transform(expr: KBitVec32Value): Any {
-        TODO("Not yet implemented")
+        return makeBvFromStringValue(expr)
     }
 
     override fun transform(expr: KBitVec64Value): Any {
-        TODO("Not yet implemented")
+        return makeBvFromStringValue(expr)
     }
 
     override fun transform(expr: KBitVecCustomValue): Any {
-        TODO("Not yet implemented")
+        return makeBvFromStringValue(expr)
     }
 
     override fun <T : KBvSort> transform(expr: KBvNotExpr<T>): Any {
-        TODO("Not yet implemented")
+        val a = getBitsOf(expr.value)
+        val c = literalProvider.makeBits(expr)
+        c.zip(a).forEach { (bit1, bit2) -> makeNot(bit1, bit2) }
+        return c
     }
 
     override fun <T : KBvSort> transform(expr: KBvReductionAndExpr<T>): Any {
-        TODO("Not yet implemented")
+        val a = getBitsOf(expr.value)
+        val c = literalProvider.makeBits(expr)
+        makeAnd(c.first(), a)
+        return c
     }
 
     override fun <T : KBvSort> transform(expr: KBvReductionOrExpr<T>): Any {
-        TODO("Not yet implemented")
+        val a = getBitsOf(expr.value)
+        val c = literalProvider.makeBits(expr)
+        makeOr(c.first(), a)
+        return c
     }
 
     override fun <T : KBvSort> transform(expr: KBvAndExpr<T>): Any {
-        TODO("Not yet implemented")
+        val a = getBitsOf(expr.arg0)
+        val b = getBitsOf(expr.arg1)
+        val c = literalProvider.makeBits(expr)
+        c.forEachIndexed { i, t -> makeAnd(t, mutableListOf(a[i], b[i])) }
+        return c
     }
 
     override fun <T : KBvSort> transform(expr: KBvOrExpr<T>): Any {
-        TODO("Not yet implemented")
+        val a = getBitsOf(expr.arg0)
+        val b = getBitsOf(expr.arg1)
+        val c = literalProvider.makeBits(expr)
+        c.forEachIndexed { i, t -> makeOr(t, mutableListOf(a[i], b[i])) }
+        return c
     }
 
     override fun <T : KBvSort> transform(expr: KBvXorExpr<T>): Any {
-        TODO("Not yet implemented")
+        val a = getBitsOf(expr.arg0)
+        val b = getBitsOf(expr.arg1)
+        val c = literalProvider.makeBits(expr)
+        c.forEachIndexed { i, t -> makeXor(t, a[i], b[i]) }
+        return c
     }
 
     override fun <T : KBvSort> transform(expr: KBvNAndExpr<T>): Any {
-        TODO("Not yet implemented")
+        val a = getBitsOf(expr.arg0)
+        val b = getBitsOf(expr.arg1)
+        val c = literalProvider.makeBits(expr)
+        c.forEachIndexed { i, t -> makeNand(t, a[i], b[i]) }
+        return c
     }
 
     override fun <T : KBvSort> transform(expr: KBvNorExpr<T>): Any {
-        TODO("Not yet implemented")
+        val a = getBitsOf(expr.arg0)
+        val b = getBitsOf(expr.arg1)
+        val c = literalProvider.makeBits(expr)
+        c.forEachIndexed { i, t -> makeNor(t, a[i], b[i]) }
+        return c
     }
 
     override fun <T : KBvSort> transform(expr: KBvXNorExpr<T>): Any {
-        TODO("Not yet implemented")
+        val a = getBitsOf(expr.arg0)
+        val b = getBitsOf(expr.arg1)
+        val c = literalProvider.makeBits(expr)
+        c.forEachIndexed { i, t -> makeEq(t, a[i], b[i]) }
+        return c
     }
 
     override fun <T : KBvSort> transform(expr: KBvNegationExpr<T>): Any {

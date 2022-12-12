@@ -4,8 +4,13 @@ plugins {
     id("org.ksmt.ksmt-base")
 }
 
-dependencies {
+repositories {
+    mavenCentral()
+    maven(url = "https://jitpack.io")
+}
 
+dependencies {
+    implementation("com.github.UnitTestBot.kosat:kosat:main-SNAPSHOT")
 }
 
 tasks.withType<KotlinCompile> {
