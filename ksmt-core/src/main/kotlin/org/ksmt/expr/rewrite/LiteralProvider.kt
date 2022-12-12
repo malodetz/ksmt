@@ -2,17 +2,15 @@ package org.ksmt.expr.rewrite
 
 import org.ksmt.expr.KExpr
 import org.kosat.Solver
+import org.ksmt.KContext
 import org.ksmt.decl.KDecl
 import org.ksmt.expr.KConst
 import org.ksmt.solver.KModel
-import org.ksmt.sort.KBoolSort
-import org.ksmt.sort.KBvSort
-import org.ksmt.sort.KFpSort
-import org.ksmt.sort.KSort
+import org.ksmt.sort.*
 
 typealias Lit = Int
 
-class LiteralProvider(private val satSolver: Solver) {
+class LiteralProvider(private val ctx: KContext, private val satSolver: Solver) {
 
     private val expressionToBits: HashMap<KDecl<*>, List<Lit>> = hashMapOf()
 
@@ -33,8 +31,42 @@ class LiteralProvider(private val satSolver: Solver) {
     }
 
     fun getFuncInterpretationFromSolution(literals: List<Lit>): Map<KDecl<*>, KModel.KFuncInterp<*>> {
-        println(literals)
-        return hashMapOf()
+        val trueLiterals = HashSet<Lit>()
+        literals.filter { it > 0 }.forEach { trueLiterals.add(it) }
+        val result = hashMapOf<KDecl<*>, KModel.KFuncInterp<*>>()
+        expressionToBits.forEach { (t, u) ->
+            result[t] =
+                KModel.KFuncInterp(t.sort, emptyList(), emptyList(), expressionFromBits(t, u, trueLiterals))
+        }
+        return result
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun <T : KSort> expressionFromBits(decl: KDecl<*>, literals: List<Lit>, trueLiterals: Set<Lit>): KExpr<T> {
+        val stringRepresentation =  literals.map {
+            if (trueLiterals.contains(it)) {
+                '1'
+            } else {
+                '0'
+            }
+        }.joinToString("")
+        return when (decl.sort) {
+            is KBoolSort -> {
+                if (stringRepresentation == "1") {
+                    ctx.mkTrue()
+                } else {
+                    ctx.mkFalse()
+                }
+            }
+
+            is KBvSort -> {
+                ctx.mkBv(stringRepresentation, stringRepresentation.length.toUInt())
+            }
+
+            else -> {
+                error("Can't build $decl from literals")
+            }
+        } as KExpr<T>
     }
 
     private fun sizeBySort(sort: KSort): Int {
@@ -52,7 +84,7 @@ class LiteralProvider(private val satSolver: Solver) {
             }
 
             else -> {
-                error("No bit representation is define for this $sort")
+                error("No bit representation is define for $sort")
             }
         }
     }

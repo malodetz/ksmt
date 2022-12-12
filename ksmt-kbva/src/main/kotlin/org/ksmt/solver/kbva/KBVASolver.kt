@@ -12,7 +12,6 @@ import org.ksmt.sort.KBoolSort
 import kotlin.time.Duration
 import kotlinx.coroutines.*
 import org.kosat.Solver
-import org.kosat.solveCnf
 import org.ksmt.expr.rewrite.LiteralProvider
 import org.ksmt.solver.model.KModelImpl
 
@@ -21,7 +20,7 @@ open class KBVASolver(private val ctx: KContext) : KSolver {
 
     private val currentCNF: MutableList<MutableList<Lit>> = mutableListOf()
     private val satSolver: Solver = Kosat(mutableListOf())
-    private val literalProvider: LiteralProvider = LiteralProvider(satSolver)
+    private val literalProvider: LiteralProvider = LiteralProvider(ctx, satSolver)
 
     override fun assert(expr: KExpr<KBoolSort>) {
         val exprBuilder = KExprBitBuilder(ctx, literalProvider, "kbvaVisitor")

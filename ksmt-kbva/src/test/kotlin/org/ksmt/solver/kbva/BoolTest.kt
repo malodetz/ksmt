@@ -4,6 +4,7 @@ import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 import org.ksmt.KContext
 import org.ksmt.solver.KSolverStatus
+import org.ksmt.utils.getValue
 
 class BoolTest {
 
@@ -286,4 +287,98 @@ class BoolTest {
         val status = solver.check()
         assertEquals(KSolverStatus.UNSAT, status)
     }
+
+    @Test
+    fun test35() = with(KContext()) {
+        val a by boolSort
+        val solver = KBVASolver(this)
+        solver.assert(mkNot(a))
+        val status = solver.check()
+        assertEquals(KSolverStatus.SAT, status)
+        val model = solver.model()
+        assertEquals(model.eval(a), falseExpr)
+    }
+
+    @Test
+    fun test36() = with(KContext()) {
+        val a by boolSort
+        val solver = KBVASolver(this)
+        solver.assert(a)
+        val status = solver.check()
+        assertEquals(KSolverStatus.SAT, status)
+        val model = solver.model()
+        assertEquals(model.eval(a), trueExpr)
+    }
+
+    @Test
+    fun test37() = with(KContext()) {
+        val a by boolSort
+        val solver = KBVASolver(this)
+        solver.assert(mkOr(a, mkFalse()))
+        val status = solver.check()
+        assertEquals(KSolverStatus.SAT, status)
+        val model = solver.model()
+        assertEquals(model.eval(a), trueExpr)
+    }
+
+    @Test
+    fun test38() = with(KContext()) {
+        val a by boolSort
+        val solver = KBVASolver(this)
+        solver.assert(mkNot(mkOr(a, mkFalse())))
+        val status = solver.check()
+        assertEquals(KSolverStatus.SAT, status)
+        val model = solver.model()
+        assertEquals(model.eval(a), falseExpr)
+    }
+
+    @Test
+    fun test39() = with(KContext()) {
+        val a by boolSort
+        val solver = KBVASolver(this)
+        solver.assert(mkAnd(mkTrue(), a))
+        val status = solver.check()
+        assertEquals(KSolverStatus.SAT, status)
+        val model = solver.model()
+        assertEquals(model.eval(a), trueExpr)
+    }
+
+    @Test
+    fun test40() = with(KContext()) {
+        val a by boolSort
+        val solver = KBVASolver(this)
+        solver.assert(mkNot(mkAnd(mkTrue(), a)))
+        val status = solver.check()
+        assertEquals(KSolverStatus.SAT, status)
+        val model = solver.model()
+        assertEquals(model.eval(a), falseExpr)
+    }
+
+    @Test
+    fun test41() = with(KContext()) {
+        val a by boolSort
+        val b by boolSort
+        val solver = KBVASolver(this)
+        solver.assert(mkAnd(b, a))
+        val status = solver.check()
+        assertEquals(KSolverStatus.SAT, status)
+        val model = solver.model()
+        assertEquals(model.eval(a), trueExpr)
+        assertEquals(model.eval(b), trueExpr)
+    }
+
+    @Test
+    fun test42() = with(KContext()) {
+        val a by boolSort
+        val b by boolSort
+        val solver = KBVASolver(this)
+        solver.assert(mkNot(mkOr(a, b)))
+        val status = solver.check()
+        assertEquals(KSolverStatus.SAT, status)
+        val model = solver.model()
+        assertEquals(model.eval(a), falseExpr)
+        assertEquals(model.eval(b), falseExpr)
+    }
+
+
 }
