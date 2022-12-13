@@ -298,4 +298,20 @@ class BitVecTest {
         assertEquals(expectedPositiveResult, positiveResult)
         assertEquals(expectedNegativeResult, negativeResult)
     }
+
+    @Test
+    fun testBvRepeatExpr(): Unit = with(context) {
+        val bv = Random.nextInt().toShort().toBv()
+        val numberOfRepetitions = 4u
+
+        val symbolicVariable = mkBvSort(bv.sort.sizeBits * numberOfRepetitions).mkConst("symbolicVariable")
+
+        solver.assert(symbolicVariable eq mkBvRepeatExpr(numberOfRepetitions.toInt(), bv))
+        solver.check()
+
+        val result = (solver.model().eval(symbolicVariable) as KBitVec64Value).numberValue.toBinary()
+        val expectedValue = bv.numberValue.toBinary().repeat(numberOfRepetitions.toInt())
+
+        assertEquals(expectedValue, result)
+    }
 }

@@ -481,7 +481,16 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
     }
 
     override fun transform(expr: KBvRepeatExpr): Any {
-        TODO("Not yet implemented")
+        val a = getBitsOf(expr.value)
+        val c = literalProvider.makeBits(expr)
+        repeat(expr.repeatNumber) {
+            for (i in 0 until a.size) {
+                val eq = literalProvider.newLiteral()
+                makeEq(eq, a[i], c[it * a.size + i])
+                cnf.add(mutableListOf(eq))
+            }
+        }
+        return c
     }
 
     override fun <T : KBvSort> transform(expr: KBvShiftLeftExpr<T>): Any {
