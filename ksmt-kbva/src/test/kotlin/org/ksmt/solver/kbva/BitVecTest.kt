@@ -216,4 +216,7 @@ class BitVecTest {
         assertEquals(-positiveValue, evaluatedNegPositiveBv.numberValue, message)
         assertEquals(expected = 0, evaluatedZeroValue.numberValue, message)
     }
+
+    @Test
+    fun testSubExpr(): Unit = testBinaryOperation(context::mkBvSubExpr, Long::minus)
 }
