@@ -142,7 +142,7 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
         val p = literalProvider.makeBits(expr)
         val c = p.first()
         val equalities = mutableListOf<Lit>()
-        repeat(lhsBits.size){
+        repeat(lhsBits.size) {
             equalities.add(literalProvider.newLiteral())
         }
         equalities.forEachIndexed { i, t -> makeEq(t, lhsBits[i], rhsBits[i]) }
@@ -442,7 +442,16 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
     }
 
     override fun transform(expr: KBvExtractExpr): Any {
-        TODO("Not yet implemented")
+        val a = getBitsOf(expr.value)
+        val n = a.size
+        val b = a.subList(n - expr.high - 1, n - expr.low)
+        val c = literalProvider.makeBits(expr)
+        c.zip(b).forEach { (b1, b2) ->
+            val eq = literalProvider.newLiteral()
+            makeEq(eq, b1, b2)
+            cnf.add(mutableListOf(eq))
+        }
+        return c
     }
 
     override fun transform(expr: KBvSignExtensionExpr): Any {
