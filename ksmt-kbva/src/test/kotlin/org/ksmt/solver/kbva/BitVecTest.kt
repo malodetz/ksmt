@@ -276,4 +276,26 @@ class BitVecTest {
         assertEquals(expectedPositiveResult, positiveResult)
         assertEquals(expectedNegativeResult, negativeResult)
     }
+
+    @Test
+    fun testBvZeroExtensionExpr(): Unit = with(context) {
+        val negativeBv = Random.nextInt(from = Int.MIN_VALUE, until = 0).toBv()
+        val positiveBv = Random.nextInt(from = 1, until = Int.MAX_VALUE).toBv()
+
+        val positiveSymbolicVariable = mkBvSort(Long.SIZE_BITS.toUInt()).mkConst("positiveSymbolicVariable")
+        val negativeSymbolicVariable = mkBvSort(Long.SIZE_BITS.toUInt()).mkConst("negativeSymbolicVariable")
+
+        solver.assert(positiveSymbolicVariable eq mkBvZeroExtensionExpr(Int.SIZE_BITS, positiveBv))
+        solver.assert(negativeSymbolicVariable eq mkBvZeroExtensionExpr(Int.SIZE_BITS, negativeBv))
+        solver.check()
+
+        val positiveResult = (solver.model().eval(positiveSymbolicVariable) as KBitVec64Value).numberValue.toBinary()
+        val negativeResult = (solver.model().eval(negativeSymbolicVariable) as KBitVec64Value).numberValue.toBinary()
+
+        val expectedPositiveResult = positiveBv.numberValue.toBinary().padStart(Long.SIZE_BITS, '0')
+        val expectedNegativeResult = negativeBv.numberValue.toBinary().padStart(Long.SIZE_BITS, '0')
+
+        assertEquals(expectedPositiveResult, positiveResult)
+        assertEquals(expectedNegativeResult, negativeResult)
+    }
 }
