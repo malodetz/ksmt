@@ -13,7 +13,6 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
 
     val cnf: MutableList<List<Lit>> = mutableListOf()
 
-
     private fun getBitsOf(expr: KExpr<*>): MutableList<Lit> {
         return expr.cachedAccept(this) as MutableList<Lit>
     }
@@ -142,7 +141,10 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
         val rhsBits = getBitsOf(expr.rhs)
         val p = literalProvider.makeBits(expr)
         val c = p.first()
-        val equalities = literalProvider.makeBits(expr.lhs)
+        val equalities = mutableListOf<Lit>()
+        repeat(lhsBits.size){
+            equalities.add(literalProvider.newLiteral())
+        }
         equalities.forEachIndexed { i, t -> makeEq(t, lhsBits[i], rhsBits[i]) }
         makeAnd(c, equalities)
         return p
@@ -294,12 +296,12 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
         return c
     }
 
-    private fun makeAdd(
+    private fun makeAddWithOverflowBit(
         n: Int,
         a: MutableList<Lit>,
         b: MutableList<Lit>,
         c: MutableList<Lit>
-    ) {
+    ): Lit {
         val carry = mutableListOf<Lit>()
         for (i in 1..n) {
             carry.add(literalProvider.newLiteral())
@@ -320,6 +322,8 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
             makeXor(a4, a[i], b[i])
             makeXor(c[i], a4, carry[i - 1])
         }
+
+        return carry.last()
     }
 
     override fun <T : KBvSort> transform(expr: KBvNegationExpr<T>): Any {
@@ -337,7 +341,7 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
             b.add(lit)
             cnf.add(listOf(if (i == 1) lit else -lit))
         }
-        makeAdd(n, inv, b, c)
+        makeAddWithOverflowBit(n, inv, b, c)
         return c.asReversed()
     }
 
@@ -346,9 +350,7 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
         val b = getBitsOf(expr.arg1).asReversed()
         val c = literalProvider.makeBits(expr)
         val n = c.size
-
-        makeAdd(n, a, b, c)
-
+        makeAddWithOverflowBit(n, a, b, c)
         return c.asReversed()
     }
 
@@ -423,7 +425,20 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
     *
     * */
     override fun transform(expr: KBvConcatExpr): Any {
-        TODO("Not yet implemented")
+        val a = getBitsOf(expr.arg0)
+        val b = getBitsOf(expr.arg1)
+        val c = literalProvider.makeBits(expr)
+        for (i in 0 until a.size) {
+            val eq = literalProvider.newLiteral()
+            makeEq(eq, a[i], c[i])
+            cnf.add(mutableListOf(eq))
+        }
+        for (i in 0 until b.size) {
+            val eq = literalProvider.newLiteral()
+            makeEq(eq, b[i], c[a.size + i])
+            cnf.add(mutableListOf(eq))
+        }
+        return c
     }
 
     override fun transform(expr: KBvExtractExpr): Any {

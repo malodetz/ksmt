@@ -4,9 +4,8 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.ksmt.KContext
-import org.ksmt.expr.KBitVec32Value
-import org.ksmt.expr.KBitVec64Value
-import org.ksmt.expr.KExpr
+import org.ksmt.decl.KBitVecValueDecl
+import org.ksmt.expr.*
 import org.ksmt.sort.KBv64Sort
 import org.ksmt.utils.mkConst
 import org.ksmt.utils.toBinary
@@ -219,4 +218,39 @@ class BitVecTest {
 
     @Test
     fun testSubExpr(): Unit = testBinaryOperation(context::mkBvSubExpr, Long::minus)
+
+    @Test
+    fun testBvExtractExpr(): Unit = with(context) {
+        val value = Random.nextLong().toBv()
+        val high = Random.nextInt(from = 32, until = 64)
+        val low = Random.nextInt(from = 5, until = 32)
+
+        val symbolicValue = mkBvSort(high.toUInt() - low.toUInt() + 1u).mkConst("symbolicVariable")
+
+        solver.assert(symbolicValue eq mkBvExtractExpr(high, low, value))
+        solver.check()
+
+        val result = solver.model().eval(symbolicValue) as KBitVecValue<*>
+        val sizeBits = value.sort.sizeBits.toInt()
+        val expectedResult = value.numberValue.toBinary().substring(sizeBits - high - 1, sizeBits - low)
+
+        assertEquals(expectedResult, (result.decl as KBitVecValueDecl).value)
+    }
+
+    @Test
+    fun testConcatExpr(): Unit = with(context) {
+        val firstBv = Random.nextLong().toBv()
+        val secondBv = Random.nextInt().toBv()
+
+        val sizeBits = firstBv.sort.sizeBits + secondBv.sort.sizeBits
+        val symbolicConst = mkBvSort(sizeBits).mkConst("symbolicConst")
+
+        solver.assert(symbolicConst eq mkBvConcatExpr(firstBv, secondBv))
+        solver.check()
+
+        val resultValue = solver.model().eval(symbolicConst) as KBitVecCustomValue
+        val expectedResult = firstBv.numberValue.toBinary() + secondBv.numberValue.toBinary()
+
+        assertEquals(expectedResult, resultValue.binaryStringValue)
+    }
 }
