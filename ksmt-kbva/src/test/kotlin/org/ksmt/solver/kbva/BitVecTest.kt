@@ -314,4 +314,25 @@ class BitVecTest {
 
         assertEquals(expectedValue, result)
     }
+
+
+    private fun testShift(
+        symbolicOperation: (KExpr<KBv64Sort>, KExpr<KBv64Sort>) -> KExpr<KBv64Sort>,
+        concreteOperation: (Long, Int) -> Long
+    ) = with(context) {
+        val value = Random.nextLong().toBv()
+        val shiftSize = Random.nextInt(from = 1, until = 50).toLong().toBv()
+
+        val symbolicVariable = value.sort().mkConst("symbolicVariable")
+
+        solver.assert(symbolicVariable eq symbolicOperation(value, shiftSize))
+        solver.check()
+
+        val expectedResult = concreteOperation(value.numberValue, shiftSize.numberValue.toInt())
+        val result = (solver.model().eval(symbolicVariable) as KBitVec64Value).numberValue
+        assertEquals(expectedResult, result)
+    }
+
+    @Test
+    fun testBvShiftLeftExpr(): Unit = testShift(context::mkBvShiftLeftExpr, Long::shl)
 }

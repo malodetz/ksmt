@@ -6,6 +6,7 @@ import org.ksmt.sort.KArithSort
 import org.ksmt.sort.KBvSort
 import org.ksmt.sort.KFpSort
 import org.ksmt.sort.KSort
+import kotlin.math.pow
 
 @Suppress("UNCHECKED_CAST")
 class KExprBitBuilder(private val ctx: KContext, private val literalProvider: LiteralProvider, builderId: String) :
@@ -169,23 +170,39 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
         return p
     }
 
+    private fun makeIte(
+        c: MutableList<Lit>,
+        n: Int,
+        p: Lit,
+        a: MutableList<Lit>,
+        b: MutableList<Lit>
+    ) {
+        val equalities1 = mutableListOf<Lit>()
+        repeat(n) {
+            equalities1.add(literalProvider.newLiteral())
+        }
+        equalities1.forEachIndexed { i, t -> makeEq(t, c[i], a[i]) }
+        val x = literalProvider.newLiteral()
+        makeAnd(x, equalities1)
+        cnf.add(mutableListOf(-p, x))
+
+        val equalities2 = mutableListOf<Lit>()
+        repeat(n) {
+            equalities2.add(literalProvider.newLiteral())
+        }
+        equalities2.forEachIndexed { i, t -> makeEq(t, c[i], b[i]) }
+        val y = literalProvider.newLiteral()
+        makeAnd(y, equalities2)
+        cnf.add(mutableListOf(p, y))
+    }
+
     override fun <T : KSort> transform(expr: KIteExpr<T>): MutableList<Lit> {
         val a = getBitsOf(expr.trueBranch)
         val b = getBitsOf(expr.falseBranch)
         val p = getBitsOf(expr.condition).first()
         val c = literalProvider.makeBits(expr)
 
-        val equalities1 = literalProvider.makeBits(expr)
-        equalities1.forEachIndexed { i, t -> makeEq(t, c[i], a[i]) }
-        val x = literalProvider.newLiteral()
-        makeAnd(x, equalities1)
-        cnf.add(mutableListOf(-p, x))
-
-        val equalities2 = literalProvider.makeBits(expr)
-        equalities2.forEachIndexed { i, t -> makeEq(t, c[i], b[i]) }
-        val y = literalProvider.newLiteral()
-        makeAnd(y, equalities2)
-        cnf.add(mutableListOf(p, y))
+        makeIte(c, a.size, p, a, b)
 
         return c
     }
@@ -493,8 +510,45 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
         return c
     }
 
+    private fun shiftLeft(a: MutableList<Lit>, n: Int): MutableList<Lit> {
+        val b = mutableListOf<Lit>()
+        repeat(a.size) {
+            b.add(literalProvider.newLiteral())
+        }
+        if (n >= a.size) {
+            b.forEach { cnf.add(mutableListOf(-it)) }
+        } else {
+            for (i in 0 until a.size - n) {
+                val eq = literalProvider.newLiteral()
+                makeEq(eq, a[i + n], b[i])
+                cnf.add(mutableListOf(eq))
+            }
+            for (i in a.size - n until a.size) {
+                cnf.add(mutableListOf(-b[i]))
+            }
+        }
+        return b
+    }
+
     override fun <T : KBvSort> transform(expr: KBvShiftLeftExpr<T>): Any {
-        TODO("Not yet implemented")
+        val a = getBitsOf(expr.arg0)
+        val b = getBitsOf(expr.arg1)
+        val n = a.size
+        var c = a
+        b.asReversed().take(8).forEachIndexed { idx, lit ->
+            val next = mutableListOf<Lit>()
+            repeat(n) {
+                next.add(literalProvider.newLiteral())
+            }
+            val shift = 2.toDouble().pow(idx).toInt()
+            val d = shiftLeft(c, shift)
+            makeIte(next, n, lit, d, c)
+            c = next
+            if (shift >= n) {
+                return@forEachIndexed
+            }
+        }
+        return c
     }
 
     override fun <T : KBvSort> transform(expr: KBvLogicalShiftRightExpr<T>): Any {
