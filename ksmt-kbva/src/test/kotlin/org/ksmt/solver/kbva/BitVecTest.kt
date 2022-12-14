@@ -376,4 +376,44 @@ class BitVecTest {
 
         assertEquals(expectedResult, actualResult)
     }
+
+    @Test
+    fun testRotateRight(): Unit = with(context) {
+        val bv = Random.nextLong().toBv()
+        val rotateSize = Random.nextLong(from = 1, until = 4).toBv()
+
+        val symbolicVariable = bv.sort().mkConst("symbolicVariable")
+
+        solver.assert(symbolicVariable eq mkBvRotateRightExpr(bv, rotateSize))
+        solver.check()
+
+        val expectedResult = bv.numberValue.toBinary().let {
+            val firstPart = it.substring(it.length - rotateSize.numberValue.toInt(), it.length)
+            val secondPart = it.substring(0, it.length - rotateSize.numberValue.toInt())
+            firstPart + secondPart
+        }
+        val actualResult = (solver.model().eval(symbolicVariable) as KBitVec64Value).numberValue.toBinary()
+
+        assertEquals(expectedResult, actualResult)
+    }
+
+    @Test
+    fun testIndexedRotateRight(): Unit = with(context) {
+        val bv = Random.nextLong().toBv()
+        val rotateSize = Random.nextInt(from = 1, until = 4)
+
+        val symbolicVariable = bv.sort().mkConst("symbolicVariable")
+
+        solver.assert(symbolicVariable eq mkBvRotateRightIndexedExpr(rotateSize, bv))
+        solver.check()
+
+        val expectedResult = bv.numberValue.toBinary().let {
+            val firstPart = it.substring(it.length - rotateSize, it.length)
+            val secondPart = it.substring(0, it.length - rotateSize)
+            firstPart + secondPart
+        }
+        val actualResult = (solver.model().eval(symbolicVariable) as KBitVec64Value).numberValue.toBinary()
+
+        assertEquals(expectedResult, actualResult)
+    }
 }

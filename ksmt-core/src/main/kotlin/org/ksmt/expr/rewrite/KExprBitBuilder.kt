@@ -657,19 +657,43 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
         return rotateLeft(a, n)
     }
 
+    private fun rotateRight(a: MutableList<Lit>, n: Int): MutableList<Lit> {
+        val b = mutableListOf<Lit>()
+        repeat(a.size) {
+            b.add(literalProvider.newLiteral())
+        }
+        val nn = n % a.size
+        b.zip(a.takeLast(nn) + a.dropLast(nn)).forEach { (x, y) ->
+            val eq = literalProvider.newLiteral()
+            makeEq(eq, x, y)
+            cnf.add(mutableListOf(eq))
+        }
+        return b
+    }
+
     override fun <T : KBvSort> transform(expr: KBvRotateRightExpr<T>): Any {
-        TODO("Not yet implemented")
+        val a = getBitsOf(expr.arg0)
+        val b = getBitsOf(expr.arg1)
+        val n = a.size
+        var c = a
+        b.asReversed().forEachIndexed { idx, lit ->
+            val next = mutableListOf<Lit>()
+            repeat(n) {
+                next.add(literalProvider.newLiteral())
+            }
+            val shift = (2.toDouble().pow(idx).toULong() % n.toULong()).toInt()
+            val d = rotateRight(c, shift)
+            makeIte(next, n, lit, d, c)
+            c = next
+        }
+        return c
     }
 
     override fun <T : KBvSort> transform(expr: KBvRotateRightIndexedExpr<T>): Any {
-        TODO("Not yet implemented")
+        val a = getBitsOf(expr.value)
+        val n = expr.rotationNumber
+        return rotateRight(a, n)
     }
-
-    /*
-    *
-    *
-    *
-    * */
 
     override fun transform(expr: KBv2IntExpr): Any {
         TODO("Not yet implemented")
