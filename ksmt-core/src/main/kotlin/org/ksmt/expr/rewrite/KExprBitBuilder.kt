@@ -377,8 +377,36 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
         return b.cachedAccept(this)
     }
 
+    private fun mul(x: MutableList<Lit>, y: MutableList<Lit>, step: Int = 0): MutableList<Lit> {
+        val n = x.size
+        val res = mutableListOf<Lit>()
+        repeat(n) {
+            res.add(literalProvider.newLiteral())
+        }
+        if (step == n) {
+            res.forEach { cnf.add(mutableListOf(-it)) }
+        } else {
+            val a = mul(shiftRight(x, 1, false), y, step + 1)
+            val b = mutableListOf<Lit>()
+            repeat(n) {
+                b.add(literalProvider.newLiteral())
+            }
+            val zero = mutableListOf<Lit>()
+            repeat(n) {
+                val lit = literalProvider.newLiteral()
+                zero.add(lit)
+                cnf.add(mutableListOf(-lit))
+            }
+            makeIte(b, n, y[step], x, zero)
+            makeAddWithOverflowBit(n, a, b, res)
+        }
+        return res
+    }
+
     override fun <T : KBvSort> transform(expr: KBvMulExpr<T>): Any {
-        TODO("Not yet implemented")
+        val a = getBitsOf(expr.arg0)
+        val b = getBitsOf(expr.arg1)
+        return mul(a.asReversed(), b.asReversed()).asReversed()
     }
 
     override fun <T : KBvSort> transform(expr: KBvUnsignedDivExpr<T>): Any {

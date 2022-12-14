@@ -33,7 +33,6 @@ class BitVecTest {
     private fun createTwoRandomLongValues(): Pair<NegativeLong, PositiveLong> {
         val negativeValue = Random.nextLong(from = Int.MIN_VALUE.toLong(), until = 0L)
         val positiveValue = Random.nextLong(from = 1L, until = Int.MAX_VALUE.toLong())
-
         return negativeValue to positiveValue
     }
 
@@ -416,4 +415,8 @@ class BitVecTest {
 
         assertEquals(expectedResult, actualResult)
     }
+
+    @Test
+    fun testMulExpr(): Unit = testBinaryOperation(context::mkBvMulExpr, Long::times)
+
 }
