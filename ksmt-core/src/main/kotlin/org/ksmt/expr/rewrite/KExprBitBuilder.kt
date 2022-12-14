@@ -551,12 +551,72 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
         return c
     }
 
+    private fun shiftRight(a: MutableList<Lit>, n: Int, isArithShift: Boolean): MutableList<Lit> {
+        val b = mutableListOf<Lit>()
+        repeat(a.size) {
+            b.add(literalProvider.newLiteral())
+        }
+        if (n >= a.size) {
+            b.forEach { cnf.add(mutableListOf(-it)) }
+        } else {
+            for (i in n until a.size) {
+                val eq = literalProvider.newLiteral()
+                makeEq(eq, a[i - n], b[i])
+                cnf.add(mutableListOf(eq))
+            }
+            for (i in 0 until n) {
+                if (isArithShift) {
+                    val eq = literalProvider.newLiteral()
+                    makeEq(eq, a[0], b[i])
+                    cnf.add(mutableListOf(eq))
+                } else {
+                    cnf.add(mutableListOf(-b[i]))
+                }
+            }
+        }
+        return b
+    }
+
     override fun <T : KBvSort> transform(expr: KBvLogicalShiftRightExpr<T>): Any {
-        TODO("Not yet implemented")
+        val a = getBitsOf(expr.arg0)
+        val b = getBitsOf(expr.arg1)
+        val n = a.size
+        var c = a
+        b.asReversed().take(8).forEachIndexed { idx, lit ->
+            val next = mutableListOf<Lit>()
+            repeat(n) {
+                next.add(literalProvider.newLiteral())
+            }
+            val shift = 2.toDouble().pow(idx).toInt()
+            val d = shiftRight(c, shift, false)
+            makeIte(next, n, lit, d, c)
+            c = next
+            if (shift >= n) {
+                return@forEachIndexed
+            }
+        }
+        return c
     }
 
     override fun <T : KBvSort> transform(expr: KBvArithShiftRightExpr<T>): Any {
-        TODO("Not yet implemented")
+        val a = getBitsOf(expr.arg0)
+        val b = getBitsOf(expr.arg1)
+        val n = a.size
+        var c = a
+        b.asReversed().take(8).forEachIndexed { idx, lit ->
+            val next = mutableListOf<Lit>()
+            repeat(n) {
+                next.add(literalProvider.newLiteral())
+            }
+            val shift = 2.toDouble().pow(idx).toInt()
+            val d = shiftRight(c, shift, true)
+            makeIte(next, n, lit, d, c)
+            c = next
+            if (shift >= n) {
+                return@forEachIndexed
+            }
+        }
+        return c
     }
 
     override fun <T : KBvSort> transform(expr: KBvRotateLeftExpr<T>): Any {

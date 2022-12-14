@@ -272,7 +272,6 @@ class BitVecTest {
         val expectedPositiveResult = positiveBv.numberValue.toBinary().padStart(Long.SIZE_BITS, '0')
         val expectedNegativeResult = negativeBv.numberValue.toBinary().padStart(Long.SIZE_BITS, '1')
 
-        println(positiveBv)
         assertEquals(expectedPositiveResult, positiveResult)
         assertEquals(expectedNegativeResult, negativeResult)
     }
@@ -335,4 +334,11 @@ class BitVecTest {
 
     @Test
     fun testBvShiftLeftExpr(): Unit = testShift(context::mkBvShiftLeftExpr, Long::shl)
+
+    @Test
+    fun testBvLogicalShiftRightExpr(): Unit = testShift(context::mkBvLogicalShiftRightExpr, Long::ushr)
+
+    @Test
+    fun testBvArithShiftRightExpr(): Unit = testShift(context::mkBvArithShiftRightExpr, Long::shr)
+
 }
