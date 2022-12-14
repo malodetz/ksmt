@@ -434,7 +434,7 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
      */
 
     override fun <T : KBvSort> transform(expr: KBvUnsignedLessExpr<T>): Any {
-        TODO("Not yet implemented")
+        return ctx.mkNot(ctx.mkBvUnsignedGreaterOrEqualExpr(expr.arg0, expr.arg1)).cachedAccept(this)
     }
 
     override fun <T : KBvSort> transform(expr: KBvSignedLessExpr<T>): Any {
@@ -442,15 +442,34 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
     }
 
     override fun <T : KBvSort> transform(expr: KBvUnsignedLessOrEqualExpr<T>): Any {
-        TODO("Not yet implemented")
+        return ctx.mkNot(ctx.mkBvUnsignedGreaterExpr(expr.arg0, expr.arg1)).cachedAccept(this)
     }
 
     override fun <T : KBvSort> transform(expr: KBvSignedLessOrEqualExpr<T>): Any {
         TODO("Not yet implemented")
     }
 
+    private fun makeUnsignedGreaterOrEqual(x: List<Lit>, y: List<Lit>): Lit {
+        val res = literalProvider.newLiteral()
+        if (x.size == 1) {
+            makeImplies(res, y[0], x[0])
+        } else {
+            val a = literalProvider.newLiteral()
+            makeAnd(a, mutableListOf(x[0], -y[0]))
+            val b = literalProvider.newLiteral()
+            makeEq(b, x[0], y[0])
+            val t = makeUnsignedGreaterOrEqual(x.drop(1), y.drop(1))
+            val c = literalProvider.newLiteral()
+            makeAnd(c, mutableListOf(b, t))
+            makeOr(res, mutableListOf(a, c))
+        }
+        return res
+    }
+
     override fun <T : KBvSort> transform(expr: KBvUnsignedGreaterOrEqualExpr<T>): Any {
-        TODO("Not yet implemented")
+        val a = getBitsOf(expr.arg0)
+        val b = getBitsOf(expr.arg1)
+        return mutableListOf(makeUnsignedGreaterOrEqual(a, b))
     }
 
     override fun <T : KBvSort> transform(expr: KBvSignedGreaterOrEqualExpr<T>): Any {
@@ -458,7 +477,8 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
     }
 
     override fun <T : KBvSort> transform(expr: KBvUnsignedGreaterExpr<T>): Any {
-        TODO("Not yet implemented")
+        val a = ctx.mkNot(ctx.mkEq(expr.arg0, expr.arg1))
+        return ctx.mkAnd(ctx.mkBvUnsignedGreaterOrEqualExpr(expr.arg0, expr.arg1), a).accept(this)
     }
 
     override fun <T : KBvSort> transform(expr: KBvSignedGreaterExpr<T>): Any {

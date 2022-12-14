@@ -6,11 +6,13 @@ import org.junit.jupiter.api.Test
 import org.ksmt.KContext
 import org.ksmt.decl.KBitVecValueDecl
 import org.ksmt.expr.*
+import org.ksmt.sort.KBoolSort
 import org.ksmt.sort.KBv64Sort
 import org.ksmt.utils.mkConst
 import org.ksmt.utils.toBinary
 import kotlin.random.Random
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 
 typealias PositiveLong = Long
 typealias NegativeLong = Long
@@ -419,4 +421,64 @@ class BitVecTest {
     @Test
     fun testMulExpr(): Unit = testBinaryOperation(context::mkBvMulExpr, Long::times)
 
+    private fun testLogicalOperation(
+        symbolicOperation: (KExpr<KBv64Sort>, KExpr<KBv64Sort>) -> KExpr<KBoolSort>,
+        concreteOperation: (Long, Long) -> Boolean
+    ): Unit = with(context) {
+        val values = (0 until 2).map { Random.nextLong() }.sorted()
+        val bvValues = values.map { it.toBv() }
+
+        val withItselfConst = mkBoolSort().mkConst("withItself")
+        val firstWithSecondConst = mkBoolSort().mkConst("firstWithSecond")
+        val secondWithFirstConst = mkBoolSort().mkConst("secondWithFirst")
+
+        val withItself = symbolicOperation(bvValues[0], bvValues[0]) eq withItselfConst
+        val firstWithSecond = symbolicOperation(bvValues[0], bvValues[1]) eq firstWithSecondConst
+        val secondWithFirst = symbolicOperation(bvValues[1], bvValues[0]) eq secondWithFirstConst
+
+        solver.assert(withItself)
+        solver.assert(firstWithSecond)
+        solver.assert(secondWithFirst)
+
+        solver.check()
+        val model = solver.model()
+
+        val expectedValues = listOf(
+            concreteOperation(values[0], values[0]),
+            concreteOperation(values[0], values[1]),
+            concreteOperation(values[1], values[0])
+        )
+
+        val actualValues = listOf(
+            model.eval(withItselfConst),
+            model.eval(firstWithSecondConst),
+            model.eval(secondWithFirstConst)
+        )
+
+        assertFalse("Values: $values") { expectedValues[0] xor (actualValues[0] is KTrue) }
+        assertFalse("Values: $values") { expectedValues[1] xor (actualValues[1] is KTrue) }
+        assertFalse("Values: $values") { expectedValues[2] xor (actualValues[2] is KTrue) }
+    }
+    @Test
+    fun testUnsignedGreaterOrEqualExpr(): Unit =
+        testLogicalOperation(context::mkBvUnsignedGreaterOrEqualExpr) { arg0: Long, arg1: Long ->
+            arg0.toULong() >= arg1.toULong()
+        }
+
+    @Test
+    fun testUnsignedGreaterExpr(): Unit =
+        testLogicalOperation(context::mkBvUnsignedGreaterExpr) { arg0: Long, arg1: Long ->
+            arg0.toULong() > arg1.toULong()
+        }
+
+    @Test
+    fun testUnsignedLessExpr(): Unit = testLogicalOperation(context::mkBvUnsignedLessExpr) { arg0: Long, arg1: Long ->
+        arg0.toULong() < arg1.toULong()
+    }
+
+    @Test
+    fun testUnsignedLessOrEqualExpr(): Unit =
+        testLogicalOperation(context::mkBvUnsignedLessOrEqualExpr) { arg0: Long, arg1: Long ->
+            arg0.toULong() <= arg1.toULong()
+        }
 }
