@@ -459,10 +459,39 @@ class BitVecTest {
         assertFalse("Values: $values") { expectedValues[1] xor (actualValues[1] is KTrue) }
         assertFalse("Values: $values") { expectedValues[2] xor (actualValues[2] is KTrue) }
     }
+
+    @Test
+    fun testUnsignedLessExpr(): Unit = testLogicalOperation(context::mkBvUnsignedLessExpr) { arg0: Long, arg1: Long ->
+        arg0.toULong() < arg1.toULong()
+    }
+
+    @Test
+    fun testSignedLessExpr(): Unit = testLogicalOperation(context::mkBvSignedLessExpr) { arg0: Long, arg1: Long ->
+        arg0 < arg1
+    }
+
+    @Test
+    fun testUnsignedLessOrEqualExpr(): Unit =
+        testLogicalOperation(context::mkBvUnsignedLessOrEqualExpr) { arg0: Long, arg1: Long ->
+            arg0.toULong() <= arg1.toULong()
+        }
+
+    @Test
+    fun testSignedLessOrEqualExpr(): Unit =
+        testLogicalOperation(context::mkBvSignedLessOrEqualExpr) { arg0: Long, arg1: Long ->
+            arg0 <= arg1
+        }
+
     @Test
     fun testUnsignedGreaterOrEqualExpr(): Unit =
         testLogicalOperation(context::mkBvUnsignedGreaterOrEqualExpr) { arg0: Long, arg1: Long ->
             arg0.toULong() >= arg1.toULong()
+        }
+
+    @Test
+    fun testSignedGreaterOrEqualExpr(): Unit =
+        testLogicalOperation(context::mkBvSignedGreaterOrEqualExpr) { arg0: Long, arg1: Long ->
+            arg0 >= arg1
         }
 
     @Test
@@ -472,13 +501,7 @@ class BitVecTest {
         }
 
     @Test
-    fun testUnsignedLessExpr(): Unit = testLogicalOperation(context::mkBvUnsignedLessExpr) { arg0: Long, arg1: Long ->
-        arg0.toULong() < arg1.toULong()
+    fun testSignedGreaterExpr(): Unit = testLogicalOperation(context::mkBvSignedGreaterExpr) { arg0: Long, arg1: Long ->
+        arg0 > arg1
     }
-
-    @Test
-    fun testUnsignedLessOrEqualExpr(): Unit =
-        testLogicalOperation(context::mkBvUnsignedLessOrEqualExpr) { arg0: Long, arg1: Long ->
-            arg0.toULong() <= arg1.toULong()
-        }
 }
