@@ -628,31 +628,13 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
     override fun transform(expr: KBvConcatExpr): Any {
         val a = getBitsOf(expr.arg0)
         val b = getBitsOf(expr.arg1)
-        val c = literalProvider.makeBits(expr)
-        for (i in 0 until a.size) {
-            val eq = literalProvider.newLiteral()
-            makeEq(eq, a[i], c[i])
-            cnf.add(mutableListOf(eq))
-        }
-        for (i in 0 until b.size) {
-            val eq = literalProvider.newLiteral()
-            makeEq(eq, b[i], c[a.size + i])
-            cnf.add(mutableListOf(eq))
-        }
-        return c
+        return a + b
     }
 
     override fun transform(expr: KBvExtractExpr): Any {
         val a = getBitsOf(expr.value)
         val n = a.size
-        val b = a.subList(n - expr.high - 1, n - expr.low)
-        val c = literalProvider.makeBits(expr)
-        c.zip(b).forEach { (b1, b2) ->
-            val eq = literalProvider.newLiteral()
-            makeEq(eq, b1, b2)
-            cnf.add(mutableListOf(eq))
-        }
-        return c
+        return a.subList(n - expr.high - 1, n - expr.low)
     }
 
     override fun transform(expr: KBvSignExtensionExpr): Any {
@@ -670,49 +652,34 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
 
     override fun transform(expr: KBvZeroExtensionExpr): Any {
         val a = getBitsOf(expr.value)
-        val c = literalProvider.makeBits(expr)
-        for (i in 0 until c.size - a.size) {
-            cnf.add(mutableListOf(-c[i]))
+        val n = literalProvider.sizeBySort(expr.sort())
+        val c = mutableListOf<Lit>()
+        for (i in 0 until n - a.size) {
+            c.add(falseLiteral)
         }
         for (i in 0 until a.size) {
-            val eq = literalProvider.newLiteral()
-            makeEq(eq, a[i], c[c.size - a.size + i])
-            cnf.add(mutableListOf(eq))
+            c.add(a[i])
         }
         return c
     }
 
     override fun transform(expr: KBvRepeatExpr): Any {
         val a = getBitsOf(expr.value)
-        val c = literalProvider.makeBits(expr)
+        val c = mutableListOf<Lit>()
         repeat(expr.repeatNumber) {
             for (i in 0 until a.size) {
-                val eq = literalProvider.newLiteral()
-                makeEq(eq, a[i], c[it * a.size + i])
-                cnf.add(mutableListOf(eq))
+                c.add(a[i])
             }
         }
         return c
     }
 
     private fun shiftLeft(a: MutableList<Lit>, n: Int): MutableList<Lit> {
-        val b = mutableListOf<Lit>()
-        repeat(a.size) {
-            b.add(literalProvider.newLiteral())
-        }
-        if (n >= a.size) {
-            b.forEach { cnf.add(mutableListOf(-it)) }
+        return if (n >= a.size) {
+            MutableList(a.size) { falseLiteral }
         } else {
-            for (i in 0 until a.size - n) {
-                val eq = literalProvider.newLiteral()
-                makeEq(eq, a[i + n], b[i])
-                cnf.add(mutableListOf(eq))
-            }
-            for (i in a.size - n until a.size) {
-                cnf.add(mutableListOf(-b[i]))
-            }
+            (a.drop(n) + MutableList(a.size) { falseLiteral }).toMutableList()
         }
-        return b
     }
 
     override fun <T : KBvSort> transform(expr: KBvShiftLeftExpr<T>): Any {
@@ -721,10 +688,7 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
         val n = a.size
         var c = a
         b.asReversed().forEachIndexed { idx, lit ->
-            val next = mutableListOf<Lit>()
-            repeat(n) {
-                next.add(literalProvider.newLiteral())
-            }
+            val next = literalProvider.makeFreeBits(n)
             val shift = 2.toDouble().pow(idx).toInt()
             val d = shiftLeft(c, shift)
             makeIte(next, n, lit, d, c)
@@ -737,29 +701,20 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
     }
 
     private fun shiftRight(a: MutableList<Lit>, n: Int, isArithShift: Boolean): MutableList<Lit> {
-        val b = mutableListOf<Lit>()
-        repeat(a.size) {
-            b.add(literalProvider.newLiteral())
-        }
-        if (n >= a.size) {
-            b.forEach { cnf.add(mutableListOf(-it)) }
+        return if (n >= a.size) {
+            MutableList(a.size) { falseLiteral }
         } else {
+            val b = MutableList(a.size) { falseLiteral }
             for (i in n until a.size) {
-                val eq = literalProvider.newLiteral()
-                makeEq(eq, a[i - n], b[i])
-                cnf.add(mutableListOf(eq))
+                b[i] = a[i - n]
             }
             for (i in 0 until n) {
                 if (isArithShift) {
-                    val eq = literalProvider.newLiteral()
-                    makeEq(eq, a[0], b[i])
-                    cnf.add(mutableListOf(eq))
-                } else {
-                    cnf.add(mutableListOf(-b[i]))
+                    b[i] = a[0]
                 }
             }
+            b
         }
-        return b
     }
 
     override fun <T : KBvSort> transform(expr: KBvLogicalShiftRightExpr<T>): Any {
@@ -768,10 +723,7 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
         val n = a.size
         var c = a
         b.asReversed().forEachIndexed { idx, lit ->
-            val next = mutableListOf<Lit>()
-            repeat(n) {
-                next.add(literalProvider.newLiteral())
-            }
+            val next = literalProvider.makeFreeBits(n)
             val shift = 2.toDouble().pow(idx).toInt()
             val d = shiftRight(c, shift, false)
             makeIte(next, n, lit, d, c)
@@ -789,10 +741,7 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
         val n = a.size
         var c = a
         b.asReversed().forEachIndexed { idx, lit ->
-            val next = mutableListOf<Lit>()
-            repeat(n) {
-                next.add(literalProvider.newLiteral())
-            }
+            val next = literalProvider.makeFreeBits(n)
             val shift = 2.toDouble().pow(idx).toInt()
             val d = shiftRight(c, shift, true)
             makeIte(next, n, lit, d, c)
@@ -805,17 +754,8 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
     }
 
     private fun rotateLeft(a: MutableList<Lit>, n: Int): MutableList<Lit> {
-        val b = mutableListOf<Lit>()
-        repeat(a.size) {
-            b.add(literalProvider.newLiteral())
-        }
         val nn = n % a.size
-        b.zip(a.drop(nn) + a.take(nn)).forEach { (x, y) ->
-            val eq = literalProvider.newLiteral()
-            makeEq(eq, x, y)
-            cnf.add(mutableListOf(eq))
-        }
-        return b
+        return (a.drop(nn) + a.take(nn)).toMutableList()
     }
 
     override fun <T : KBvSort> transform(expr: KBvRotateLeftExpr<T>): Any {
@@ -824,10 +764,7 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
         val n = a.size
         var c = a
         b.asReversed().forEachIndexed { idx, lit ->
-            val next = mutableListOf<Lit>()
-            repeat(n) {
-                next.add(literalProvider.newLiteral())
-            }
+            val next = literalProvider.makeFreeBits(n)
             val shift = (2.toDouble().pow(idx).toULong() % n.toULong()).toInt()
             val d = rotateLeft(c, shift)
             makeIte(next, n, lit, d, c)
@@ -843,17 +780,8 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
     }
 
     private fun rotateRight(a: MutableList<Lit>, n: Int): MutableList<Lit> {
-        val b = mutableListOf<Lit>()
-        repeat(a.size) {
-            b.add(literalProvider.newLiteral())
-        }
         val nn = n % a.size
-        b.zip(a.takeLast(nn) + a.dropLast(nn)).forEach { (x, y) ->
-            val eq = literalProvider.newLiteral()
-            makeEq(eq, x, y)
-            cnf.add(mutableListOf(eq))
-        }
-        return b
+        return (a.takeLast(nn) + a.dropLast(nn)).toMutableList()
     }
 
     override fun <T : KBvSort> transform(expr: KBvRotateRightExpr<T>): Any {
@@ -862,10 +790,7 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
         val n = a.size
         var c = a
         b.asReversed().forEachIndexed { idx, lit ->
-            val next = mutableListOf<Lit>()
-            repeat(n) {
-                next.add(literalProvider.newLiteral())
-            }
+            val next = literalProvider.makeFreeBits(n)
             val shift = (2.toDouble().pow(idx).toULong() % n.toULong()).toInt()
             val d = rotateRight(c, shift)
             makeIte(next, n, lit, d, c)

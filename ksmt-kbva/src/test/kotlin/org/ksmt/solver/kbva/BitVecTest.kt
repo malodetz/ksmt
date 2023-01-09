@@ -529,9 +529,7 @@ class BitVecTest {
         val secondExpectedValue = concreteOperation(positiveValue, negativeValue)
 
         assertEquals(firstExpectedValue, firstActualValue)
-        println(firstActualValue)
         assertEquals(secondExpectedValue, secondActualValue)
-        println(secondActualValue)
     }
 
     @Test
@@ -543,7 +541,4 @@ class BitVecTest {
     fun testUnsignedRemExpr(): Unit = testSmallBinaryOperation(context::mkBvUnsignedRemExpr) { arg0: Int, arg1: Int ->
         arg0.toUInt().rem(arg1.toUInt()).toInt()
     }
-
-//    @Test
-//    fun testSignedDivExpr(): Unit = testSmallBinaryOperation(context::mkBvSignedDivExpr, Int::div)
 }
