@@ -16,7 +16,7 @@ dependencies {
 }
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions.freeCompilerArgs += listOf("-Xjvm-default=all")
+    kotlinOptions.freeCompilerArgs += listOf("-Xmx12g")
 }
 
 publishing {

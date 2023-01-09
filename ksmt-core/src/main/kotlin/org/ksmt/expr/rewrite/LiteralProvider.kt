@@ -19,13 +19,18 @@ class LiteralProvider(private val ctx: KContext, private val satSolver: Solver) 
     }
 
     fun makeBits(expr: KExpr<*>): MutableList<Lit> {
-        val result = mutableListOf<Lit>()
         val n = sizeBySort(expr.sort())
-        repeat(n) {
-            result.add(newLiteral())
-        }
+        val result = makeFreeBits(n)
         if (expr is KConst) {
             expressionToBits[expr.decl] = result
+        }
+        return result
+    }
+
+    fun makeFreeBits(n: Int): MutableList<Lit> {
+        val result = mutableListOf<Lit>()
+        repeat(n) {
+            result.add(newLiteral())
         }
         return result
     }
@@ -43,7 +48,7 @@ class LiteralProvider(private val ctx: KContext, private val satSolver: Solver) 
 
     @Suppress("UNCHECKED_CAST")
     private fun <T : KSort> expressionFromBits(decl: KDecl<*>, literals: List<Lit>, trueLiterals: Set<Lit>): KExpr<T> {
-        val stringRepresentation =  literals.map {
+        val stringRepresentation = literals.map {
             if (trueLiterals.contains(it)) {
                 '1'
             } else {
@@ -69,7 +74,7 @@ class LiteralProvider(private val ctx: KContext, private val satSolver: Solver) 
         } as KExpr<T>
     }
 
-    private fun sizeBySort(sort: KSort): Int {
+     fun sizeBySort(sort: KSort): Int {
         return when (sort) {
             is KBoolSort -> {
                 1

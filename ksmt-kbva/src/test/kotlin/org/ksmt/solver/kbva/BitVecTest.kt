@@ -7,6 +7,7 @@ import org.ksmt.KContext
 import org.ksmt.decl.KBitVecValueDecl
 import org.ksmt.expr.*
 import org.ksmt.sort.KBoolSort
+import org.ksmt.sort.KBv32Sort
 import org.ksmt.sort.KBv64Sort
 import org.ksmt.utils.mkConst
 import org.ksmt.utils.toBinary
@@ -504,4 +505,45 @@ class BitVecTest {
     fun testSignedGreaterExpr(): Unit = testLogicalOperation(context::mkBvSignedGreaterExpr) { arg0: Long, arg1: Long ->
         arg0 > arg1
     }
+    private fun testSmallBinaryOperation(
+        symbolicOperation: (KExpr<KBv32Sort>, KExpr<KBv32Sort>) -> KExpr<KBv32Sort>,
+        concreteOperation: (Int, Int) -> Int
+    ): Unit = with(context) {
+        val negativeValue = Random.nextInt(from = Int.MIN_VALUE, until = 0)
+        val positiveValue = Random.nextInt(from = 1, until = Int.MAX_VALUE)
+
+        val negativeBv = negativeValue.toBv()
+        val positiveBv = positiveValue.toBv()
+
+        val firstResult = mkBv32Sort().mkConst("symbolicVariable")
+        val secondResult = mkBv32Sort().mkConst("anotherSymbolicVariable")
+
+        solver.assert(symbolicOperation(negativeBv, positiveBv) eq firstResult)
+        solver.assert(symbolicOperation(positiveBv, negativeBv) eq secondResult)
+        solver.check()
+
+        val firstActualValue = (solver.model().eval(firstResult) as KBitVec32Value).numberValue
+        val secondActualValue = (solver.model().eval(secondResult) as KBitVec32Value).numberValue
+
+        val firstExpectedValue = concreteOperation(negativeValue, positiveValue)
+        val secondExpectedValue = concreteOperation(positiveValue, negativeValue)
+
+        assertEquals(firstExpectedValue, firstActualValue)
+        println(firstActualValue)
+        assertEquals(secondExpectedValue, secondActualValue)
+        println(secondActualValue)
+    }
+
+    @Test
+    fun testUnsignedDivExpr(): Unit = testSmallBinaryOperation(context::mkBvUnsignedDivExpr) { arg0: Int, arg1: Int ->
+        (arg0.toUInt() / arg1.toUInt()).toInt()
+    }
+
+    @Test
+    fun testUnsignedRemExpr(): Unit = testSmallBinaryOperation(context::mkBvUnsignedRemExpr) { arg0: Int, arg1: Int ->
+        arg0.toUInt().rem(arg1.toUInt()).toInt()
+    }
+
+//    @Test
+//    fun testSignedDivExpr(): Unit = testSmallBinaryOperation(context::mkBvSignedDivExpr, Int::div)
 }
