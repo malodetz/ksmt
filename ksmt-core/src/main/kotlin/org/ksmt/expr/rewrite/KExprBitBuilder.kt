@@ -20,6 +20,12 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
         falseLit
     }
 
+    private val trueLiteral by lazy {
+        val trueLit = literalProvider.newLiteral()
+        cnf.add(mutableListOf(trueLit))
+        trueLit
+    }
+
     private fun getBitsOf(expr: KExpr<*>): MutableList<Lit> {
         return expr.cachedAccept(this) as MutableList<Lit>
     }
@@ -258,9 +264,7 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
 
     override fun <T : KBvSort> transform(expr: KBvNotExpr<T>): Any {
         val a = getBitsOf(expr.value)
-        val c = literalProvider.makeBits(expr)
-        c.zip(a).forEach { (bit1, bit2) -> makeNot(bit1, bit2) }
-        return c
+        return a.map { -it }.toMutableList()
     }
 
     override fun <T : KBvSort> transform(expr: KBvReductionAndExpr<T>): Any {
@@ -331,10 +335,7 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
         b: MutableList<Lit>,
         c: MutableList<Lit>
     ): Lit {
-        val carry = mutableListOf<Lit>()
-        for (i in 1..n) {
-            carry.add(literalProvider.newLiteral())
-        }
+        val carry = literalProvider.makeFreeBits(n)
         makeAnd(carry[0], mutableListOf(a[0], b[0]))
         makeXor(c[0], a[0], b[0])
         for (i in 1 until n) {
@@ -356,20 +357,11 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
         a: MutableList<Lit>
     ): MutableList<Lit> {
         val n = a.size
-        val res = mutableListOf<Lit>()
-        repeat(n) {
-            res.add(literalProvider.newLiteral())
-        }
-        val inv = a.map {
-            val bit = literalProvider.newLiteral()
-            makeNot(bit, it)
-            bit
-        }.toMutableList()
-        val b = mutableListOf<Lit>()
-        for (i in 1..n) {
-            val lit = literalProvider.newLiteral()
-            b.add(lit)
-            cnf.add(listOf(if (i == 1) lit else -lit))
+        val res = literalProvider.makeFreeBits(n)
+        val inv = a.map { -it }.toMutableList()
+        val b = mutableListOf(trueLiteral)
+        repeat(n - 1) {
+            b.add(falseLiteral)
         }
         makeAddWithOverflowBit(n, inv, b, res)
         return res.asReversed()
@@ -463,28 +455,28 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
         return div.takeLast(a.size)
     }
 
-    private fun makeSignedDivRem(a: MutableList<Lit>, b: MutableList<Lit>): Pair<MutableList<Lit>, MutableList<Lit>> {
+    private fun makeAbs(a: MutableList<Lit>): MutableList<Lit> {
+        val res = literalProvider.makeFreeBits(a.size)
+        makeIte(res, a.size, a[0], makeNeg(a), a)
+        return res
+    }
+
+    private fun makeSignedDiv(a: MutableList<Lit>, b: MutableList<Lit>): MutableList<Lit> {
         val n = a.size
-        for (i in 0 until n) {
-            a.add(falseLiteral)
-            b.add(falseLiteral)
-        }
-        val div = literalProvider.makeFreeBits(2 * n)
-        val rem = literalProvider.makeFreeBits(2 * n)
-        val t1 = mul(b, div.asReversed())
-        makeAddWithOverflowBit(2 * n, t1, rem.asReversed(), a)
-
-        val y = makeUnsignedGreaterOrEqual(rem, b.asReversed())
-        cnf.add(mutableListOf(-y))
-
-        val z = makeUnsignedGreaterOrEqual(div, a.asReversed())
-        cnf.add(mutableListOf(-z))
-
-        return Pair(div, rem)
+        val x = makeAbs(a).asReversed()
+        val y = makeAbs(b).asReversed()
+        val div = makeUnsignedDivRem(x, y).first.takeLast(n).toMutableList()
+        val c = literalProvider.newLiteral()
+        makeXor(c, a[0], b[0])
+        val res = literalProvider.makeFreeBits(n)
+        makeIte(res, n, c, makeNeg(div.asReversed()), div)
+        return res
     }
 
     override fun <T : KBvSort> transform(expr: KBvSignedDivExpr<T>): Any {
-        TODO("Not yet implemented")
+        val a = getBitsOf(expr.arg0)
+        val b = getBitsOf(expr.arg1)
+        return makeSignedDiv(a.toMutableList(), b.toMutableList())
     }
 
     override fun <T : KBvSort> transform(expr: KBvUnsignedRemExpr<T>): Any {
