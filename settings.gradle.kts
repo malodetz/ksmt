@@ -5,6 +5,12 @@ include("ksmt-bitwuzla")
 include("ksmt-runner")
 include("ksmt-test")
 
+sourceControl {
+    gitRepository(uri("https://github.com/UnitTestBot/kosat.git")) {
+        producesModule("org.kosat:kosat")
+    }
+}
+
 pluginManagement {
     resolutionStrategy {
         eachPlugin {

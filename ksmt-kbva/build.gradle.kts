@@ -11,7 +11,12 @@ repositories {
 
 dependencies {
     implementation(project(":ksmt-core"))
-    implementation("com.github.UnitTestBot.kosat:kosat:main-SNAPSHOT")
+    //implementation("com.github.UnitTestBot.kosat:kosat:main-SNAPSHOT")
+    implementation("org.kosat:kosat:1.0-SNAPSHOT") {
+        version {
+            branch = "main"
+        }
+    }
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:0.30.2-eap13")
 }
 

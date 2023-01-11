@@ -457,7 +457,7 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
 
     private fun makeAbs(a: MutableList<Lit>): MutableList<Lit> {
         val res = literalProvider.makeFreeBits(a.size)
-        makeIte(res, a.size, a[0], makeNeg(a), a)
+        makeIte(res, a.size, a[0], makeNeg(a.asReversed()), a)
         return res
     }
 
@@ -487,17 +487,16 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
     }
 
     override fun <T : KBvSort> transform(expr: KBvSignedRemExpr<T>): Any {
-        TODO("Not yet implemented")
+        val a = getBitsOf(expr.arg0)
+        val b = getBitsOf(expr.arg1)
+        val div = makeSignedDiv(a.toMutableList(), b.toMutableList())
+        val qd = mul(b.asReversed(), div.asReversed())
+        return makeSub(a.asReversed(), qd)
     }
 
     override fun <T : KBvSort> transform(expr: KBvSignedModExpr<T>): Any {
         TODO("Not yet implemented")
     }
-
-    /**
-     *
-     */
-
     override fun <T : KBvSort> transform(expr: KBvUnsignedLessExpr<T>): Any {
         val a = getBitsOf(expr.arg0)
         val b = getBitsOf(expr.arg1)

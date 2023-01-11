@@ -10,8 +10,14 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.UnitTestBot.kosat:kosat:main-SNAPSHOT")
+//    implementation("com.github.UnitTestBot.kosat:kosat:main-SNAPSHOT")
+    implementation("org.kosat:kosat:1.0-SNAPSHOT") {
+        version {
+            branch = "main"
+        }
+    }
 }
+
 
 tasks.withType<KotlinCompile> {
     kotlinOptions.freeCompilerArgs += listOf("-Xjvm-default=all")

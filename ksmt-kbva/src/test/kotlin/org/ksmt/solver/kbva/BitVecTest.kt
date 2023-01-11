@@ -544,4 +544,7 @@ class BitVecTest {
 
     @Test
     fun testSignedDivExpr(): Unit = testSmallBinaryOperation(context::mkBvSignedDivExpr, Int::div)
+
+    @Test
+    fun testSignedReminderExpr(): Unit = testSmallBinaryOperation(context::mkBvSignedRemExpr, Int::rem)
 }
