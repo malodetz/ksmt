@@ -547,4 +547,7 @@ class BitVecTest {
 
     @Test
     fun testSignedReminderExpr(): Unit = testSmallBinaryOperation(context::mkBvSignedRemExpr, Int::rem)
+
+    @Test
+    fun testSignedModExpr(): Unit = testSmallBinaryOperation(context::mkBvSignedModExpr, Int::mod)
 }
