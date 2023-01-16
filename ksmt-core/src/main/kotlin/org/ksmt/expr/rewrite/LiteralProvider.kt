@@ -14,6 +14,10 @@ class LiteralProvider(private val ctx: KContext, private val satSolver: Solver) 
 
     private val expressionToBits: HashMap<KDecl<*>, List<Lit>> = hashMapOf()
 
+    val trueLiteral by lazy {
+        newLiteral()
+    }
+
     fun newLiteral(): Lit {
         return satSolver.addVariable()
     }
@@ -74,7 +78,7 @@ class LiteralProvider(private val ctx: KContext, private val satSolver: Solver) 
         } as KExpr<T>
     }
 
-     fun sizeBySort(sort: KSort): Int {
+    fun sizeBySort(sort: KSort): Int {
         return when (sort) {
             is KBoolSort -> {
                 1

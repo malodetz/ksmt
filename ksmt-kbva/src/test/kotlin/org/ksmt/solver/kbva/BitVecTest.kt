@@ -14,6 +14,7 @@ import org.ksmt.utils.toBinary
 import kotlin.random.Random
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 typealias PositiveLong = Long
 typealias NegativeLong = Long
@@ -505,6 +506,7 @@ class BitVecTest {
     fun testSignedGreaterExpr(): Unit = testLogicalOperation(context::mkBvSignedGreaterExpr) { arg0: Long, arg1: Long ->
         arg0 > arg1
     }
+
     private fun testSmallBinaryOperation(
         symbolicOperation: (KExpr<KBv32Sort>, KExpr<KBv32Sort>) -> KExpr<KBv32Sort>,
         concreteOperation: (Int, Int) -> Int
@@ -550,4 +552,147 @@ class BitVecTest {
 
     @Test
     fun testSignedModExpr(): Unit = testSmallBinaryOperation(context::mkBvSignedModExpr, Int::mod)
+
+    private fun testOverUnderflowWithSign(
+        initialSignedValue: Byte,
+        initialUnsignedValue: UByte,
+        operation: (KBitVec8Value, KBitVec8Value, Boolean) -> KExpr<KBoolSort>,
+        signedErrorValue: Byte,
+        unsignedErrorValue: UByte,
+        signedNoErrorValue: Byte,
+        unsignedNoErrorValue: UByte
+    ): Unit = with(context) {
+        val signedValue = initialSignedValue.toBv()
+        val unsignedValue = initialUnsignedValue.toBv()
+
+        val symbolicSignedOverflow = mkBoolSort().mkConst("signedOverflow")
+        val symbolicUnsignedOverflow = mkBoolSort().mkConst("unsignedOverflow")
+        val symbolicSignedNoOverflow = mkBoolSort().mkConst("signedNoOverflow")
+        val symbolicUnsignedNoOverflow = mkBoolSort().mkConst("unsignedNoOverflow")
+
+        val signedOverflow = operation(signedValue, signedErrorValue.toBv(), true)
+        val unsignedOverflow = operation(unsignedValue, unsignedErrorValue.toBv(), false)
+        val signedNoOverflow = operation(signedValue, signedNoErrorValue.toBv(), true)
+        val unsignedNoOverflow = operation(unsignedValue, unsignedNoErrorValue.toBv(), false)
+
+        solver.assert(symbolicSignedOverflow eq signedOverflow)
+        solver.assert(symbolicUnsignedOverflow eq unsignedOverflow)
+        solver.assert(symbolicSignedNoOverflow eq signedNoOverflow)
+        solver.assert(symbolicUnsignedNoOverflow eq unsignedNoOverflow)
+        solver.check()
+
+        val actualSignedOverflowResult = (solver.model().eval(symbolicSignedOverflow))
+        val actualUnsignedOverflowResult = (solver.model().eval(symbolicUnsignedOverflow))
+        val actualSignedNoOverflowResult = (solver.model().eval(symbolicSignedNoOverflow))
+        val actualUnsignedNoOverflowResult = (solver.model().eval(symbolicUnsignedNoOverflow))
+
+        assertTrue(actualSignedOverflowResult is KFalse)
+        assertTrue(actualUnsignedOverflowResult is KFalse)
+        assertTrue(actualSignedNoOverflowResult is KTrue)
+        assertTrue(actualUnsignedNoOverflowResult is KTrue)
+    }
+
+    private fun testOverUnderflowWithoutSign(
+        initialValue: Byte,
+        operation: (KBitVec8Value, KBitVec8Value) -> KExpr<KBoolSort>,
+        errorValue: Byte,
+        noErrorValue: Byte,
+    ): Unit = with(context) {
+        val value = initialValue.toBv()
+
+        val symbolicOverflow = mkBoolSort().mkConst("overflow")
+        val symbolicNoOverflow = mkBoolSort().mkConst("noOverflow")
+
+        val overflow = operation(value, errorValue.toBv())
+        val noOverflow = operation(value, noErrorValue.toBv())
+
+        solver.assert(symbolicOverflow eq overflow)
+        solver.assert(symbolicNoOverflow eq noOverflow)
+        solver.check()
+
+        val actualOverflowResult = (solver.model().eval(symbolicOverflow))
+        val actualNoOverflowResult = (solver.model().eval(symbolicNoOverflow))
+
+        assertTrue(actualOverflowResult is KFalse)
+        assertTrue(actualNoOverflowResult is KTrue)
+    }
+
+    @Test
+    fun testKBvAddNoOverflow(): Unit = testOverUnderflowWithSign(
+        initialSignedValue = 100.toByte(),
+        initialUnsignedValue = 100.toUByte(),
+        operation = context::mkBvAddNoOverflowExpr,
+        signedErrorValue = 100.toByte(),
+        unsignedErrorValue = 200.toUByte(),
+        signedNoErrorValue = 10.toByte(),
+        unsignedNoErrorValue = 100.toUByte()
+    )
+
+    @Test
+    fun testKBvAddNoUnderflow(): Unit = testOverUnderflowWithoutSign(
+        initialValue = (-100).toByte(),
+        operation = context::mkBvAddNoUnderflowExpr,
+        errorValue = (-120).toByte(),
+        noErrorValue = (-5).toByte(),
+    )
+
+    @Test
+    fun testKBvSubNoOverflow(): Unit = testOverUnderflowWithoutSign(
+        initialValue = 100.toByte(),
+        operation = context::mkBvSubNoOverflowExpr,
+        errorValue = (-100).toByte(),
+        noErrorValue = 10.toByte()
+    )
+
+    @Test
+    fun testKBvSubNoUnderflow(): Unit = testOverUnderflowWithSign(
+        initialSignedValue = (-100).toByte(),
+        initialUnsignedValue = 10.toUByte(),
+        operation = context::mkBvSubNoUnderflowExpr,
+        signedErrorValue = Byte.MAX_VALUE,
+        unsignedErrorValue = 100.toUByte(),
+        signedNoErrorValue = 11.toByte(),
+        unsignedNoErrorValue = 10.toUByte()
+    )
+
+    @Test
+    fun testKBvDivNoOverflow(): Unit = testOverUnderflowWithoutSign(
+        initialValue = (-128).toByte(),
+        operation = context::mkBvDivNoOverflowExpr,
+        errorValue = (-1).toByte(),
+        noErrorValue = 1.toByte()
+    )
+
+    @Test
+    fun testKBvNegNoOverflow(): Unit = with(context) {
+        val errorValue = (-128).toByte()
+        val noErrorValue = 127.toByte()
+
+        val symbolicOverflow = mkBoolSort().mkConst("overflow")
+        val symbolicNoOverflow = mkBoolSort().mkConst("noOverflow")
+
+        val overflow = mkBvNegationNoOverflowExpr(errorValue.toBv())
+        val noOverflow = mkBvNegationNoOverflowExpr(noErrorValue.toBv())
+
+        solver.assert(symbolicOverflow eq overflow)
+        solver.assert(symbolicNoOverflow eq noOverflow)
+        solver.check()
+
+        val actualOverflowResult = (solver.model().eval(symbolicOverflow))
+        val actualNoOverflowResult = (solver.model().eval(symbolicNoOverflow))
+
+        assertTrue(actualOverflowResult is KFalse)
+        assertTrue(actualNoOverflowResult is KTrue)
+    }
+
+    @Test
+    fun testKBvMulNoOverflow(): Unit = testOverUnderflowWithSign(
+        initialSignedValue = 100.toByte(),
+        initialUnsignedValue = 100.toUByte(),
+        operation = context::mkBvMulNoOverflowExpr,
+        signedErrorValue = 2.toByte(),
+        unsignedErrorValue = 3.toUByte(),
+        signedNoErrorValue = 1.toByte(),
+        unsignedNoErrorValue = 2.toUByte()
+    )
 }
