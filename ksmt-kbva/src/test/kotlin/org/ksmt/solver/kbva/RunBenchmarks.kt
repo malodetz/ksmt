@@ -40,7 +40,7 @@ fun main() {
         if (trueStatus != KSolverStatus.UNKNOWN) {
             println(it)
             total += 1
-            val solver = KBVASolver(ctx)
+            val solver = KBVASolver(ctx, SolverType.KISSAT)
             assertions.forEach { assertion -> solver.assert(assertion) }
             val solverStatus = solver.check(timeout = 1.minutes)
             if (solverStatus == trueStatus) {

@@ -13,13 +13,22 @@ import kotlin.time.Duration
 import kotlinx.coroutines.*
 import org.kosat.Solver
 import org.ksmt.expr.rewrite.LiteralProvider
+import org.ksmt.solver.kissat.KissatSolver
 import org.ksmt.solver.model.KModelImpl
 
-@Suppress("UNCHECKED_CAST")
-open class KBVASolver(private val ctx: KContext) : KSolver {
+enum class SolverType {
+    CDCL, KISSAT
+}
 
+@Suppress("UNCHECKED_CAST")
+open class KBVASolver(private val ctx: KContext, solverType: SolverType) : KSolver {
+
+    private val satSolver: Solver = if (solverType == SolverType.CDCL) {
+        Kosat(mutableListOf())
+    } else {
+        KissatSolver()
+    }
     private val currentCNF: MutableList<MutableList<Lit>> = mutableListOf()
-    private val satSolver: Solver = Kosat(mutableListOf())
     private val literalProvider: LiteralProvider = LiteralProvider(ctx, satSolver)
 
     override fun assert(expr: KExpr<KBoolSort>) {

@@ -21,12 +21,12 @@ typealias NegativeLong = Long
 
 class BitVecTest {
     private var context = KContext()
-    private var solver = KBVASolver(context)
+    private var solver = KBVASolver(context, SolverType.CDCL)
 
     @BeforeEach
     fun createNewEnvironment() {
         context = KContext()
-        solver = KBVASolver(context)
+        solver = KBVASolver(context, SolverType.CDCL)
     }
 
     @AfterEach

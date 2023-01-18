@@ -12,7 +12,7 @@ class BoolTest {
     fun test1() = with(KContext()) {
         val a = mkTrue()
 
-        val solver = KBVASolver(this)
+        val solver = KBVASolver(this, SolverType.KISSAT)
         solver.assert(a)
         val status = solver.check()
         assertEquals(KSolverStatus.SAT, status)
@@ -21,7 +21,7 @@ class BoolTest {
     @Test
     fun test2() = with(KContext()) {
         val a = mkFalse()
-        val solver = KBVASolver(this)
+        val solver = KBVASolver(this, SolverType.KISSAT)
         solver.assert(a)
         val status = solver.check()
         assertEquals(KSolverStatus.UNSAT, status)
@@ -30,7 +30,7 @@ class BoolTest {
     @Test
     fun test3() = with(KContext()) {
         val a = mkTrue()
-        val solver = KBVASolver(this)
+        val solver = KBVASolver(this, SolverType.KISSAT)
         solver.assert(mkNot(a))
         val status = solver.check()
         assertEquals(KSolverStatus.UNSAT, status)
@@ -39,7 +39,7 @@ class BoolTest {
     @Test
     fun test4() = with(KContext()) {
         val a = mkFalse()
-        val solver = KBVASolver(this)
+        val solver = KBVASolver(this, SolverType.KISSAT)
         solver.assert(mkNot(a))
         val status = solver.check()
         assertEquals(KSolverStatus.SAT, status)
@@ -47,7 +47,7 @@ class BoolTest {
 
     @Test
     fun test5() = with(KContext()) {
-        val solver = KBVASolver(this)
+        val solver = KBVASolver(this, SolverType.KISSAT)
         solver.assert(mkImplies(mkTrue(), mkFalse()))
         val status = solver.check()
         assertEquals(KSolverStatus.UNSAT, status)
@@ -56,7 +56,7 @@ class BoolTest {
 
     @Test
     fun test6() = with(KContext()) {
-        val solver = KBVASolver(this)
+        val solver = KBVASolver(this, SolverType.KISSAT)
         solver.assert(mkImplies(mkTrue(), mkTrue()))
         val status = solver.check()
         assertEquals(KSolverStatus.SAT, status)
@@ -64,7 +64,7 @@ class BoolTest {
 
     @Test
     fun test7() = with(KContext()) {
-        val solver = KBVASolver(this)
+        val solver = KBVASolver(this, SolverType.KISSAT)
         solver.assert(mkImplies(mkFalse(), mkTrue()))
         val status = solver.check()
         assertEquals(KSolverStatus.SAT, status)
@@ -72,7 +72,7 @@ class BoolTest {
 
     @Test
     fun test8() = with(KContext()) {
-        val solver = KBVASolver(this)
+        val solver = KBVASolver(this, SolverType.KISSAT)
         solver.assert(mkImplies(mkFalse(), mkFalse()))
         val status = solver.check()
         assertEquals(KSolverStatus.SAT, status)
@@ -80,7 +80,7 @@ class BoolTest {
 
     @Test
     fun test9() = with(KContext()) {
-        val solver = KBVASolver(this)
+        val solver = KBVASolver(this, SolverType.KISSAT)
         solver.assert(mkEq(mkFalse(), mkFalse()))
         val status = solver.check()
         assertEquals(KSolverStatus.SAT, status)
@@ -88,7 +88,7 @@ class BoolTest {
 
     @Test
     fun test10() = with(KContext()) {
-        val solver = KBVASolver(this)
+        val solver = KBVASolver(this, SolverType.KISSAT)
         solver.assert(mkEq(mkTrue(), mkTrue()))
         val status = solver.check()
         assertEquals(KSolverStatus.SAT, status)
@@ -96,7 +96,7 @@ class BoolTest {
 
     @Test
     fun test11() = with(KContext()) {
-        val solver = KBVASolver(this)
+        val solver = KBVASolver(this, SolverType.KISSAT)
         solver.assert(mkEq(mkTrue(), mkFalse()))
         val status = solver.check()
         assertEquals(KSolverStatus.UNSAT, status)
@@ -104,7 +104,7 @@ class BoolTest {
 
     @Test
     fun test12() = with(KContext()) {
-        val solver = KBVASolver(this)
+        val solver = KBVASolver(this, SolverType.KISSAT)
         solver.assert(mkEq(mkFalse(), mkTrue()))
         val status = solver.check()
         assertEquals(KSolverStatus.UNSAT, status)
@@ -112,7 +112,7 @@ class BoolTest {
 
     @Test
     fun test13() = with(KContext()) {
-        val solver = KBVASolver(this)
+        val solver = KBVASolver(this, SolverType.KISSAT)
         solver.assert(mkDistinct(mutableListOf(mkFalse(), mkFalse())))
         val status = solver.check()
         assertEquals(KSolverStatus.UNSAT, status)
@@ -120,7 +120,7 @@ class BoolTest {
 
     @Test
     fun test14() = with(KContext()) {
-        val solver = KBVASolver(this)
+        val solver = KBVASolver(this, SolverType.KISSAT)
         solver.assert(mkDistinct(mutableListOf(mkFalse(), mkFalse())))
         val status = solver.check()
         assertEquals(KSolverStatus.UNSAT, status)
@@ -128,7 +128,7 @@ class BoolTest {
 
     @Test
     fun test15() = with(KContext()) {
-        val solver = KBVASolver(this)
+        val solver = KBVASolver(this, SolverType.KISSAT)
         solver.assert(mkDistinct(mutableListOf(mkTrue(), mkFalse())))
         val status = solver.check()
         assertEquals(KSolverStatus.SAT, status)
@@ -136,7 +136,7 @@ class BoolTest {
 
     @Test
     fun test16() = with(KContext()) {
-        val solver = KBVASolver(this)
+        val solver = KBVASolver(this, SolverType.KISSAT)
         solver.assert(mkDistinct(mutableListOf(mkFalse(), mkTrue())))
         val status = solver.check()
         assertEquals(KSolverStatus.SAT, status)
@@ -144,7 +144,7 @@ class BoolTest {
 
     @Test
     fun test17() = with(KContext()) {
-        val solver = KBVASolver(this)
+        val solver = KBVASolver(this, SolverType.KISSAT)
         solver.assert(mkDistinct(mutableListOf(mkTrue())))
         val status = solver.check()
         assertEquals(KSolverStatus.SAT, status)
@@ -152,7 +152,7 @@ class BoolTest {
 
     @Test
     fun test18() = with(KContext()) {
-        val solver = KBVASolver(this)
+        val solver = KBVASolver(this, SolverType.KISSAT)
         solver.assert(mkDistinct(mutableListOf(mkTrue(), mkFalse(), mkTrue())))
         val status = solver.check()
         assertEquals(KSolverStatus.UNSAT, status)
@@ -160,7 +160,7 @@ class BoolTest {
 
     @Test
     fun test19() = with(KContext()) {
-        val solver = KBVASolver(this)
+        val solver = KBVASolver(this, SolverType.KISSAT)
         solver.assert(mkXor(mkTrue(), mkFalse()))
         val status = solver.check()
         assertEquals(KSolverStatus.SAT, status)
@@ -169,7 +169,7 @@ class BoolTest {
 
     @Test
     fun test20() = with(KContext()) {
-        val solver = KBVASolver(this)
+        val solver = KBVASolver(this, SolverType.KISSAT)
         solver.assert(mkXor(mkTrue(), mkTrue()))
         val status = solver.check()
         assertEquals(KSolverStatus.UNSAT, status)
@@ -177,7 +177,7 @@ class BoolTest {
 
     @Test
     fun test21() = with(KContext()) {
-        val solver = KBVASolver(this)
+        val solver = KBVASolver(this, SolverType.KISSAT)
         solver.assert(mkXor(mkFalse(), mkTrue()))
         val status = solver.check()
         assertEquals(KSolverStatus.SAT, status)
@@ -185,7 +185,7 @@ class BoolTest {
 
     @Test
     fun test22() = with(KContext()) {
-        val solver = KBVASolver(this)
+        val solver = KBVASolver(this, SolverType.KISSAT)
         solver.assert(mkXor(mkFalse(), mkFalse()))
         val status = solver.check()
         assertEquals(KSolverStatus.UNSAT, status)
@@ -193,7 +193,7 @@ class BoolTest {
 
     @Test
     fun test23() = with(KContext()) {
-        val solver = KBVASolver(this)
+        val solver = KBVASolver(this, SolverType.KISSAT)
         solver.assert(mkAnd(mkTrue(), mkFalse()))
         val status = solver.check()
         assertEquals(KSolverStatus.UNSAT, status)
@@ -202,7 +202,7 @@ class BoolTest {
 
     @Test
     fun test24() = with(KContext()) {
-        val solver = KBVASolver(this)
+        val solver = KBVASolver(this, SolverType.KISSAT)
         solver.assert(mkAnd(mkTrue(), mkTrue()))
         val status = solver.check()
         assertEquals(KSolverStatus.SAT, status)
@@ -210,7 +210,7 @@ class BoolTest {
 
     @Test
     fun test25() = with(KContext()) {
-        val solver = KBVASolver(this)
+        val solver = KBVASolver(this, SolverType.KISSAT)
         solver.assert(mkAnd(mkFalse(), mkTrue()))
         val status = solver.check()
         assertEquals(KSolverStatus.UNSAT, status)
@@ -218,7 +218,7 @@ class BoolTest {
 
     @Test
     fun test26() = with(KContext()) {
-        val solver = KBVASolver(this)
+        val solver = KBVASolver(this, SolverType.KISSAT)
         solver.assert(mkAnd(mkFalse(), mkFalse()))
         val status = solver.check()
         assertEquals(KSolverStatus.UNSAT, status)
@@ -226,7 +226,7 @@ class BoolTest {
 
     @Test
     fun test27() = with(KContext()) {
-        val solver = KBVASolver(this)
+        val solver = KBVASolver(this, SolverType.KISSAT)
         solver.assert(mkAnd(mkTrue()))
         val status = solver.check()
         assertEquals(KSolverStatus.SAT, status)
@@ -234,7 +234,7 @@ class BoolTest {
 
     @Test
     fun test28() = with(KContext()) {
-        val solver = KBVASolver(this)
+        val solver = KBVASolver(this, SolverType.KISSAT)
         solver.assert(mkAnd(mkFalse()))
         val status = solver.check()
         assertEquals(KSolverStatus.UNSAT, status)
@@ -242,7 +242,7 @@ class BoolTest {
 
     @Test
     fun test29() = with(KContext()) {
-        val solver = KBVASolver(this)
+        val solver = KBVASolver(this, SolverType.KISSAT)
         solver.assert(mkOr(mkTrue(), mkFalse()))
         val status = solver.check()
         assertEquals(KSolverStatus.SAT, status)
@@ -250,7 +250,7 @@ class BoolTest {
 
     @Test
     fun test30() = with(KContext()) {
-        val solver = KBVASolver(this)
+        val solver = KBVASolver(this, SolverType.KISSAT)
         solver.assert(mkOr(mkTrue(), mkTrue()))
         val status = solver.check()
         assertEquals(KSolverStatus.SAT, status)
@@ -258,7 +258,7 @@ class BoolTest {
 
     @Test
     fun test31() = with(KContext()) {
-        val solver = KBVASolver(this)
+        val solver = KBVASolver(this, SolverType.KISSAT)
         solver.assert(mkOr(mkFalse(), mkTrue()))
         val status = solver.check()
         assertEquals(KSolverStatus.SAT, status)
@@ -266,7 +266,7 @@ class BoolTest {
 
     @Test
     fun test32() = with(KContext()) {
-        val solver = KBVASolver(this)
+        val solver = KBVASolver(this, SolverType.KISSAT)
         solver.assert(mkOr(mkFalse(), mkFalse()))
         val status = solver.check()
         assertEquals(KSolverStatus.UNSAT, status)
@@ -274,7 +274,7 @@ class BoolTest {
 
     @Test
     fun test33() = with(KContext()) {
-        val solver = KBVASolver(this)
+        val solver = KBVASolver(this, SolverType.KISSAT)
         solver.assert(mkOr(mkTrue()))
         val status = solver.check()
         assertEquals(KSolverStatus.SAT, status)
@@ -282,7 +282,7 @@ class BoolTest {
 
     @Test
     fun test34() = with(KContext()) {
-        val solver = KBVASolver(this)
+        val solver = KBVASolver(this, SolverType.KISSAT)
         solver.assert(mkOr(mkFalse()))
         val status = solver.check()
         assertEquals(KSolverStatus.UNSAT, status)
@@ -291,7 +291,7 @@ class BoolTest {
     @Test
     fun test35() = with(KContext()) {
         val a by boolSort
-        val solver = KBVASolver(this)
+        val solver = KBVASolver(this, SolverType.CDCL)
         solver.assert(mkNot(a))
         val status = solver.check()
         assertEquals(KSolverStatus.SAT, status)
@@ -302,7 +302,7 @@ class BoolTest {
     @Test
     fun test36() = with(KContext()) {
         val a by boolSort
-        val solver = KBVASolver(this)
+        val solver = KBVASolver(this, SolverType.CDCL)
         solver.assert(a)
         val status = solver.check()
         assertEquals(KSolverStatus.SAT, status)
@@ -313,7 +313,7 @@ class BoolTest {
     @Test
     fun test37() = with(KContext()) {
         val a by boolSort
-        val solver = KBVASolver(this)
+        val solver = KBVASolver(this, SolverType.CDCL)
         solver.assert(mkOr(a, mkFalse()))
         val status = solver.check()
         assertEquals(KSolverStatus.SAT, status)
@@ -324,7 +324,7 @@ class BoolTest {
     @Test
     fun test38() = with(KContext()) {
         val a by boolSort
-        val solver = KBVASolver(this)
+        val solver = KBVASolver(this, SolverType.CDCL)
         solver.assert(mkNot(mkOr(a, mkFalse())))
         val status = solver.check()
         assertEquals(KSolverStatus.SAT, status)
@@ -335,7 +335,7 @@ class BoolTest {
     @Test
     fun test39() = with(KContext()) {
         val a by boolSort
-        val solver = KBVASolver(this)
+        val solver = KBVASolver(this, SolverType.CDCL)
         solver.assert(mkAnd(mkTrue(), a))
         val status = solver.check()
         assertEquals(KSolverStatus.SAT, status)
@@ -346,7 +346,7 @@ class BoolTest {
     @Test
     fun test40() = with(KContext()) {
         val a by boolSort
-        val solver = KBVASolver(this)
+        val solver = KBVASolver(this, SolverType.CDCL)
         solver.assert(mkNot(mkAnd(mkTrue(), a)))
         val status = solver.check()
         assertEquals(KSolverStatus.SAT, status)
@@ -358,7 +358,7 @@ class BoolTest {
     fun test41() = with(KContext()) {
         val a by boolSort
         val b by boolSort
-        val solver = KBVASolver(this)
+        val solver = KBVASolver(this, SolverType.CDCL)
         solver.assert(mkAnd(b, a))
         val status = solver.check()
         assertEquals(KSolverStatus.SAT, status)
@@ -371,7 +371,7 @@ class BoolTest {
     fun test42() = with(KContext()) {
         val a by boolSort
         val b by boolSort
-        val solver = KBVASolver(this)
+        val solver = KBVASolver(this, SolverType.CDCL)
         solver.assert(mkNot(mkOr(a, b)))
         val status = solver.check()
         assertEquals(KSolverStatus.SAT, status)

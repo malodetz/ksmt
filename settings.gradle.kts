@@ -4,6 +4,8 @@ include("ksmt-z3")
 include("ksmt-bitwuzla")
 include("ksmt-runner")
 include("ksmt-test")
+include("ksmt-kbva")
+include("ksmt-kissat")
 
 sourceControl {
     gitRepository(uri("https://github.com/UnitTestBot/kosat.git")) {
@@ -20,4 +22,4 @@ pluginManagement {
         }
     }
 }
-include("ksmt-kbva")
+
