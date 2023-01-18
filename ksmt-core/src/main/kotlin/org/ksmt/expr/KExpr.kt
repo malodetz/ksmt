@@ -11,7 +11,12 @@ abstract class KExpr<T : KSort>(ctx: KContext) : KAst(ctx) {
 
     abstract fun sort(): T
 
-    fun cachedAccept(visitor: KVisitor): Any = visitorCache.getOrPut(visitor.visitorId) { return accept(visitor) }
+    fun cachedAccept(visitor: KVisitor): Any {
+        if (!visitorCache.containsKey(visitor.visitorId)){
+            visitorCache[visitor.visitorId] = accept(visitor)
+        }
+        return visitorCache[visitor.visitorId]!!
+    }
 
     open fun accept(visitor: KVisitor): Any = error("No transformation for $this in visitor ${visitor.visitorId}")
 

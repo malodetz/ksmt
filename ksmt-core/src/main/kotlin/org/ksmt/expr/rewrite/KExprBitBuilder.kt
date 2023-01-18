@@ -20,10 +20,11 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
         trueLit
     }
 
-    private val falseLiteral = -trueLiteral
+    private val falseLiteral by lazy { -trueLiteral }
 
     private fun getBitsOf(expr: KExpr<*>): MutableList<Lit> {
-        return expr.cachedAccept(this) as MutableList<Lit>
+        val a = expr.cachedAccept(this) as MutableList<Lit>
+        return a
     }
 
     private fun makeAnd(c: Lit, bits: List<Lit>) {
@@ -109,10 +110,7 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
 
     override fun transform(expr: KNotExpr): MutableList<Lit> {
         val a = getBitsOf(expr.arg).first()
-        val p = literalProvider.makeBits(expr)
-        val c = p.first()
-        makeNot(c, a)
-        return p
+        return mutableListOf(-a)
     }
 
     override fun transform(expr: KImpliesExpr): MutableList<Lit> {
@@ -151,12 +149,9 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
         lhsBits: MutableList<Lit>,
         rhsBits: MutableList<Lit>
     ): MutableList<Lit> {
-        val p = literalProvider.newLiteral()
-        val equalities = mutableListOf<Lit>()
-        repeat(lhsBits.size) {
-            equalities.add(literalProvider.newLiteral())
-        }
+        val equalities = literalProvider.makeFreeBits(lhsBits.size)
         equalities.forEachIndexed { i, t -> makeEq(t, lhsBits[i], rhsBits[i]) }
+        val p = literalProvider.newLiteral()
         makeAnd(p, equalities)
         return mutableListOf(p)
     }
