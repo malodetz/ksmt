@@ -23,8 +23,7 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
     private val falseLiteral by lazy { -trueLiteral }
 
     private fun getBitsOf(expr: KExpr<*>): MutableList<Lit> {
-        val a = expr.cachedAccept(this) as MutableList<Lit>
-        return a
+        return expr.cachedAccept(this) as MutableList<Lit>
     }
 
     private fun makeAnd(c: Lit, bits: List<Lit>) {
@@ -833,8 +832,8 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
     }
 
     override fun <T : KBvSort> transform(expr: KBvAddNoOverflowExpr<T>): Any {
-        val a = getBitsOf(expr.arg0).asReversed()
-        val b = getBitsOf(expr.arg1).asReversed()
+        val a = getBitsOf(expr.arg0).toMutableList().asReversed()
+        val b = getBitsOf(expr.arg1).toMutableList().asReversed()
         val n = a.size
         if (expr.isSigned) {
             a.add(a.last())
@@ -853,8 +852,8 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
     }
 
     override fun <T : KBvSort> transform(expr: KBvAddNoUnderflowExpr<T>): Any {
-        val a = getBitsOf(expr.arg0).asReversed()
-        val b = getBitsOf(expr.arg1).asReversed()
+        val a = getBitsOf(expr.arg0).toMutableList().asReversed()
+        val b = getBitsOf(expr.arg1).toMutableList().asReversed()
         val n = a.size
         a.add(a.last())
         b.add(b.last())
@@ -864,8 +863,8 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
     }
 
     override fun <T : KBvSort> transform(expr: KBvSubNoOverflowExpr<T>): Any {
-        val a = getBitsOf(expr.arg0).asReversed()
-        val b = getBitsOf(expr.arg1).asReversed()
+        val a = getBitsOf(expr.arg0).toMutableList().asReversed()
+        val b = getBitsOf(expr.arg1).toMutableList().asReversed()
         a.add(a.last())
         b.add(b.last())
         val c = makeSub(a, b)
@@ -873,8 +872,8 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
     }
 
     override fun <T : KBvSort> transform(expr: KBvSubNoUnderflowExpr<T>): Any {
-        val a = getBitsOf(expr.arg0).asReversed()
-        val b = getBitsOf(expr.arg1).asReversed()
+        val a = getBitsOf(expr.arg0).toMutableList().asReversed()
+        val b = getBitsOf(expr.arg1).toMutableList().asReversed()
         if (expr.isSigned) {
             a.add(a.last())
             b.add(b.last())
@@ -891,8 +890,8 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
     }
 
     override fun <T : KBvSort> transform(expr: KBvDivNoOverflowExpr<T>): Any {
-        val a = getBitsOf(expr.arg0)
-        val b = getBitsOf(expr.arg1)
+        val a = getBitsOf(expr.arg0).toMutableList()
+        val b = getBitsOf(expr.arg1).toMutableList()
         val n = a.size
         val intMin = mutableListOf(trueLiteral)
         repeat(n - 1) {
@@ -910,7 +909,7 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
     }
 
     override fun <T : KBvSort> transform(expr: KBvNegNoOverflowExpr<T>): Any {
-        val a = getBitsOf(expr.value)
+        val a = getBitsOf(expr.value).toMutableList()
         val n = a.size
         val intMin = mutableListOf(trueLiteral)
         repeat(n - 1) {
@@ -921,8 +920,8 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
     }
 
     override fun <T : KBvSort> transform(expr: KBvMulNoOverflowExpr<T>): Any {
-        val a = getBitsOf(expr.arg0).asReversed()
-        val b = getBitsOf(expr.arg1).asReversed()
+        val a = getBitsOf(expr.arg0).toMutableList().asReversed()
+        val b = getBitsOf(expr.arg1).toMutableList().asReversed()
         val n = a.size
         if (!expr.isSigned) {
             repeat(n) {
@@ -952,8 +951,8 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
     }
 
     override fun <T : KBvSort> transform(expr: KBvMulNoUnderflowExpr<T>): Any {
-        val a = getBitsOf(expr.arg0).asReversed()
-        val b = getBitsOf(expr.arg1).asReversed()
+        val a = getBitsOf(expr.arg0).toMutableList().asReversed()
+        val b = getBitsOf(expr.arg1).toMutableList().asReversed()
         val n = a.size
         val c = literalProvider.newLiteral()
         makeXor(c, a.last(), b.last())
