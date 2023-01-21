@@ -1,5 +1,8 @@
 package org.ksmt.solver.kbva
 
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeoutOrNull
 import org.ksmt.KContext
 import org.ksmt.solver.KSolverStatus
 import org.ksmt.solver.z3.KZ3SMTLibParser
@@ -7,7 +10,9 @@ import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
 import java.io.IOException
+import kotlin.system.measureTimeMillis
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 
 fun getRealStatus(file: File): KSolverStatus {
@@ -38,20 +43,50 @@ fun main() {
         val assertions = KZ3SMTLibParser(ctx).parse(it.toPath())
         val trueStatus = getRealStatus(it)
         if (trueStatus != KSolverStatus.UNKNOWN) {
-            println(it)
+            print(it)
             total += 1
-            val solver = KBVASolver(ctx, SolverType.KISSAT)
-            assertions.forEach { assertion -> solver.assert(assertion) }
-            val solverStatus = solver.check(timeout = 1.minutes)
-            if (solverStatus == trueStatus) {
-                correct += 1
-            } else if (solverStatus == KSolverStatus.UNKNOWN) {
-                outtimed += 1
+            var isComplete = true
+            var isCorrect = false
+            val time = measureTimeMillis {
+                val solver = KBVASolver(ctx, SolverType.KISSAT)
+                val isAsserted = runBlocking {
+                    val job = async { assertions.forEach { assertion -> solver.assert(assertion) } }
+                    val res = withTimeoutOrNull(30.seconds) {
+                        job.await()
+                        true
+                    } ?: false
+                    if (!job.isCompleted) {
+                        job.cancel()
+                    }
+                    res
+                }
+                if (!isAsserted) {
+                    isComplete = false
+                } else {
+                    val solverStatus = solver.check(timeout = 30.seconds)
+                    if (solverStatus == trueStatus) {
+                        isCorrect = true
+                    } else if (solverStatus == KSolverStatus.UNKNOWN) {
+                        isComplete = false
+                    }
+                }
             }
-            println("$trueStatus $solverStatus")
+            if (!isComplete) {
+                outtimed += 1
+                println(" TIMEOUT")
+            } else {
+                if (isCorrect) {
+                    correct += 1
+                    print(" CORRECT ")
+                } else {
+                    print("WRONG ")
+                }
+                println(time)
+            }
         }
     }
-    println(total)
-    println(correct)
-    println(outtimed)
+    println("Total: $total")
+    println("Timeout: $outtimed")
+    println("Correct: $correct")
+    println("Wrong: ${total - correct - outtimed})")
 }

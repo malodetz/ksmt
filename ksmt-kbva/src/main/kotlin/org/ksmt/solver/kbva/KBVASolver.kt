@@ -54,13 +54,24 @@ open class KBVASolver(private val ctx: KContext, solverType: SolverType) : KSolv
         TODO("Not yet implemented")
     }
 
+
     override fun check(timeout: Duration): KSolverStatus {
-        val result = runBlocking {
-            withTimeoutOrNull(timeout.inWholeMilliseconds) {
-                satSolver.solve()
+        var result: Boolean? = null
+        val t = Thread {
+            result = satSolver.solve()
+        }
+        t.start()
+        val partialTimeout = timeout.inWholeMilliseconds / 1000
+        for (i in 0 until 1000){
+            Thread.sleep(partialTimeout)
+            if (!t.isAlive || t.isInterrupted){
+                break
             }
-        } ?: return KSolverStatus.UNKNOWN
-        return if (result) {
+        }
+        t.interrupt()
+        return if (result == null) {
+            KSolverStatus.UNKNOWN
+        } else if (result!!) {
             KSolverStatus.SAT
         } else {
             KSolverStatus.UNSAT
@@ -75,6 +86,7 @@ open class KBVASolver(private val ctx: KContext, solverType: SolverType) : KSolv
             exprBuilder.cnf.forEach { satSolver.addClause(it.toMutableList()) }
             assumptionClause.add(bits.first())
         }
+        //TODO fix with threads
         val result = runBlocking {
             withTimeoutOrNull(timeout.inWholeMilliseconds) {
                 satSolver.solve(assumptionClause)
