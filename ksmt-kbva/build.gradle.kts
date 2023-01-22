@@ -12,6 +12,7 @@ repositories {
 dependencies {
     implementation(project(":ksmt-core"))
     implementation(project(":ksmt-z3"))
+    implementation(project(":ksmt-bitwuzla"))
     implementation(project(":ksmt-kissat"))
     implementation("org.kosat:kosat:1.0-SNAPSHOT") {
         version {

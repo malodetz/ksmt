@@ -32,12 +32,6 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
         cnf.add(clause)
         bits.forEach { cnf.add(mutableListOf(it, -c)) }
     }
-
-    private fun makeNot(c: Lit, a: Lit) {
-        cnf.add(mutableListOf(-a, -c))
-        cnf.add(mutableListOf(a, c))
-    }
-
     private fun makeOr(c: Lit, bits: List<Lit>) {
         val clause = mutableListOf(-c)
         clause.addAll(bits)
@@ -166,7 +160,7 @@ class KExprBitBuilder(private val ctx: KContext, private val literalProvider: Li
 
                 val inequalities = literalProvider.makeBits(expr.args[i])
                 inequalities.forEachIndexed { idx, t -> makeXor(t, a[idx], b[idx]) }
-                makeAnd(c, inequalities)
+                makeOr(c, inequalities)
                 total.add(c)
             }
         }
