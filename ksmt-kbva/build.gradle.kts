@@ -14,23 +14,10 @@ dependencies {
     implementation(project(":ksmt-z3"))
     implementation(project(":ksmt-bitwuzla"))
     implementation(project(":ksmt-kissat"))
-    implementation("org.kosat:kosat:1.0-SNAPSHOT") {
-        version {
-            branch = "main"
-        }
-    }
+    implementation("com.github.UnitTestBot.kosat:kosat:main-SNAPSHOT")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
 }
 
 tasks.withType<KotlinCompile> {
     kotlinOptions.freeCompilerArgs += listOf("-Xmx12g")
-}
-
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            from(components["java"])
-            artifact(tasks["kotlinSourcesJar"])
-        }
-    }
 }

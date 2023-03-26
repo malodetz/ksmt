@@ -57,18 +57,22 @@ open class KBVASolver(private val ctx: KContext, solverType: SolverType) : KSolv
 
     override fun check(timeout: Duration): KSolverStatus {
         var result: Boolean? = null
-        val t = Thread {
+        if (timeout != Duration.INFINITE) {
+            val t = Thread {
+                result = satSolver.solve()
+            }
+            t.start()
+            val partialTimeout = timeout.inWholeMilliseconds / 1000
+            for (i in 0 until 1000) {
+                Thread.sleep(partialTimeout)
+                if (!t.isAlive || t.isInterrupted) {
+                    break
+                }
+            }
+            t.interrupt()
+        } else {
             result = satSolver.solve()
         }
-        t.start()
-        val partialTimeout = timeout.inWholeMilliseconds / 1000
-        for (i in 0 until 1000){
-            Thread.sleep(partialTimeout)
-            if (!t.isAlive || t.isInterrupted){
-                break
-            }
-        }
-        t.interrupt()
         return if (result == null) {
             KSolverStatus.UNKNOWN
         } else if (result!!) {
@@ -92,9 +96,9 @@ open class KBVASolver(private val ctx: KContext, solverType: SolverType) : KSolv
         }
         t.start()
         val partialTimeout = timeout.inWholeMilliseconds / 1000
-        for (i in 0 until 1000){
+        for (i in 0 until 1000) {
             Thread.sleep(partialTimeout)
-            if (!t.isAlive || t.isInterrupted){
+            if (!t.isAlive || t.isInterrupted) {
                 break
             }
         }
