@@ -91,18 +91,22 @@ open class KBVASolver(private val ctx: KContext, solverType: SolverType) : KSolv
             assumptionClause.add(bits.first())
         }
         var result: Boolean? = null
-        val t = Thread {
-            result = satSolver.solve(assumptionClause)
-        }
-        t.start()
-        val partialTimeout = timeout.inWholeMilliseconds / 1000
-        for (i in 0 until 1000) {
-            Thread.sleep(partialTimeout)
-            if (!t.isAlive || t.isInterrupted) {
-                break
+        if (timeout != Duration.INFINITE) {
+            val t = Thread {
+                result = satSolver.solve(assumptionClause)
             }
+            t.start()
+            val partialTimeout = timeout.inWholeMilliseconds / 1000
+            for (i in 0 until 1000) {
+                Thread.sleep(partialTimeout)
+                if (!t.isAlive || t.isInterrupted) {
+                    break
+                }
+            }
+            t.interrupt()
+        } else {
+            result = satSolver.solve()
         }
-        t.interrupt()
         return if (result == null) {
             KSolverStatus.UNKNOWN
         } else if (result!!) {
