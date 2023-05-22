@@ -1,4 +1,4 @@
-package org.ksmt.solver.kbva
+package org.ksmt.solver.aig
 
 import org.ksmt.expr.KExpr
 import org.ksmt.KContext

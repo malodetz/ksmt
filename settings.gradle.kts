@@ -6,7 +6,7 @@ include("ksmt-runner")
 include("ksmt-test")
 include("ksmt-kbva")
 include("ksmt-kissat")
-
+include("ksmt-kbva-aig")
 
 pluginManagement {
     resolutionStrategy {

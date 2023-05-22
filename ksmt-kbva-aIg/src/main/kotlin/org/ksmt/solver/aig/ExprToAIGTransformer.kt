@@ -1,4 +1,4 @@
-package org.ksmt.solver.kbva
+package org.ksmt.solver.aig
 
 import org.ksmt.KContext
 import org.ksmt.expr.rewrite.KVisitor;

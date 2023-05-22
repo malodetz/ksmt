@@ -1,4 +1,4 @@
-package org.ksmt.solver.kbva
+package org.ksmt.solver.aig
 
 import java.io.PrintStream
 
@@ -37,7 +37,7 @@ class AndInverterGraph(private val literalProvider: LiteralProvider) {
         }
     }
 
-    fun printAIGasASCII(ps: PrintStream = System.out) {
+    fun printAIGasASCII(ps: PrintStream) {
         normalizeOutputs()
         val inputs = HashSet<Lit>((1..literalProvider.currentLiteral).toList())
         triplets.forEach { (a, _, _) -> inputs.remove(a / 2) }
