@@ -26,25 +26,37 @@ class ExprToAIGTransformer(
     }
 
     private fun makeAnd(c: Lit, bits: List<Lit>) {
-        val q = ArrayDeque(bits)
-        while (bits.size > 2) {
+        val q = ArrayDeque<Lit>()
+        q.addAll(bits)
+        while (q.size > 2) {
             val a = q.removeFirst()
             val b = q.removeFirst()
             val t = literalProvider.newLiteral()
             aig.addEdge(t, a, b)
+            q.add(t)
         }
-        aig.addEdge(c, q[0], q[1])
+        if (q.size > 1){
+            aig.addEdge(c, q[0], q[1])
+        }else{
+            aig.addEdge(c, q[0], q[0])
+        }
     }
 
     private fun makeOr(c: Lit, bits: List<Lit>) {
-        val q = ArrayDeque(bits)
-        while (bits.size > 2) {
+        val q = ArrayDeque<Lit>()
+        q.addAll(bits)
+        while (q.size > 2) {
             val a = q.removeFirst()
             val b = q.removeFirst()
             val t = literalProvider.newLiteral()
             aig.addEdge(-t, -a, -b)
+            q.add(t)
         }
-        aig.addEdge(-c, -q[0], -q[1])
+        if (q.size > 1) {
+            aig.addEdge(-c, -q[0], -q[1])
+        }else{
+            aig.addEdge(-c, -q[0], -q[0])
+        }
     }
 
     private fun makeEq(c: Lit, a: Lit, b: Lit) {

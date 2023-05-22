@@ -22,7 +22,7 @@ class AndInverterGraph(private val literalProvider: LiteralProvider) {
     }
 
     fun addEdge(c: Lit, a: Lit, b: Lit) {
-        triplets.add(Triple(norm(a), norm(b), norm(c)))
+        triplets.add(Triple(norm(c), norm(a), norm(b)))
     }
 
     private fun normalizeOutputs() {
@@ -41,8 +41,8 @@ class AndInverterGraph(private val literalProvider: LiteralProvider) {
         normalizeOutputs()
         val inputs = HashSet<Lit>((1..literalProvider.currentLiteral).toList())
         triplets.forEach { (a, _, _) -> inputs.remove(a / 2) }
-        ps.println("${literalProvider.currentLiteral} ${inputs.size} ${0} ${1} ${outputs.size}")
-        inputs.sorted().forEach { ps.println(it) }
+        ps.println("${literalProvider.currentLiteral} ${inputs.size} ${0} ${1} ${triplets.size}")
+        inputs.sorted().forEach { ps.println(2 * it) }
         ps.println(outputs.first())
         triplets.forEach { (a, b, c) -> ps.println("$a $b $c") }
     }
