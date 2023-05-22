@@ -6,8 +6,6 @@ import kotlinx.coroutines.withTimeoutOrNull
 import org.ksmt.KContext
 import org.ksmt.solver.KSolverStatus
 import org.ksmt.solver.z3.KZ3SMTLibParser
-import org.ksmt.solver.z3.KZ3Solver
-import org.ksmt.solver.bitwuzla.KBitwuzlaSolver
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
@@ -52,7 +50,6 @@ fun main() {
             var isCorrect = false
             val time = measureTimeMillis {
                 val solver = KBVASolver(ctx, SolverType.KISSAT)
-//                val solver = KBitwuzlaSolver(ctx)
                 val isAsserted = runBlocking {
                     val job = async { assertions.forEach { assertion -> solver.assert(assertion) } }
                     val res = withTimeoutOrNull(30.seconds) {
