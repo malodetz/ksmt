@@ -28,12 +28,17 @@ fun getRealStatus(file: File): KSolverStatus {
 fun main() {
     val benchPath = File("benchmarks")
     benchPath.walk().filter { !it.isDirectory }.forEach {
-        val ctx = KContext()
-        val assertions = KZ3SMTLibParser(ctx).parse(it.toPath())
         val trueStatus = getRealStatus(it)
-        val assertionConverter = AssertionConverter(ctx)
-        val aagFilePath = "aigs/${it.nameWithoutExtension}.aag"
-        File(aagFilePath).createNewFile()
-        assertionConverter.assertionsToAAG(assertions, PrintStream(aagFilePath))
+        if (trueStatus != KSolverStatus.UNKNOWN) {
+            val ctx = KContext()
+            val assertions = KZ3SMTLibParser(ctx).parse(it.toPath())
+            val assertionConverter = AssertionConverter(ctx)
+            val aagFilePath = "aigs/${it.nameWithoutExtension}.aag"
+            File(aagFilePath).createNewFile()
+            if (!assertionConverter.assertionsToAAG(assertions, PrintStream(aagFilePath))) {
+                File(aagFilePath).delete()
+            }
+            println("$aagFilePath $trueStatus")
+        }
     }
 }

@@ -19,7 +19,7 @@ class ExprToAIGTransformer(
     KVisitor(builderId) {
 
     private val trueLiteral: Lit = 1
-    private val falseLiteral: Lit = 0
+    private val falseLiteral: Lit = -1
 
     private fun getBitsOf(expr: KExpr<*>): MutableList<Lit> {
         return expr.cachedAccept(this) as MutableList<Lit>
@@ -35,9 +35,9 @@ class ExprToAIGTransformer(
             aig.addEdge(t, a, b)
             q.add(t)
         }
-        if (q.size > 1){
+        if (q.size > 1) {
             aig.addEdge(c, q[0], q[1])
-        }else{
+        } else {
             aig.addEdge(c, q[0], q[0])
         }
     }
@@ -54,7 +54,7 @@ class ExprToAIGTransformer(
         }
         if (q.size > 1) {
             aig.addEdge(-c, -q[0], -q[1])
-        }else{
+        } else {
             aig.addEdge(-c, -q[0], -q[0])
         }
     }
@@ -191,27 +191,13 @@ class ExprToAIGTransformer(
         a: MutableList<Lit>,
         b: MutableList<Lit>
     ) {
-        val equalities1 = mutableListOf<Lit>()
-        repeat(n) {
-            equalities1.add(literalProvider.newLiteral())
+        for (i in 0 until n) {
+            val t1 = literalProvider.newLiteral()
+            aig.addEdge(t1, p, a[i])
+            val t2 = literalProvider.newLiteral()
+            aig.addEdge(t2, -p, b[i])
+            aig.addEdge(-c[i], -t1, -t2)
         }
-        equalities1.forEachIndexed { i, t -> makeEq(t, c[i], a[i]) }
-        val x = literalProvider.newLiteral()
-        makeAnd(x, equalities1)
-        val t1 = literalProvider.newLiteral()
-        aig.addEdge(-t1, p, -x)
-        aig.addOutput(t1)
-
-        val equalities2 = mutableListOf<Lit>()
-        repeat(n) {
-            equalities2.add(literalProvider.newLiteral())
-        }
-        equalities2.forEachIndexed { i, t -> makeEq(t, c[i], b[i]) }
-        val y = literalProvider.newLiteral()
-        makeAnd(y, equalities2)
-        val t2 = literalProvider.newLiteral()
-        aig.addEdge(-t2, -p, y)
-        aig.addOutput(t2)
     }
 
     override fun <T : KSort> transform(expr: KIteExpr<T>): MutableList<Lit> {

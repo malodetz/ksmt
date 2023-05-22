@@ -14,11 +14,11 @@ class AssertionConverter(ctx: KContext) {
     private val exprToAIGTransformer: ExprToAIGTransformer =
         ExprToAIGTransformer(ctx, aig, literalProvider, "AIGBuilder")
 
-    fun assertionsToAAG(assertions: List<KExpr<KBoolSort>>, ps: PrintStream = System.out) {
+    fun assertionsToAAG(assertions: List<KExpr<KBoolSort>>, ps: PrintStream = System.out) : Boolean {
         assertions.forEach { expr ->
             val bits = expr.cachedAccept(exprToAIGTransformer) as MutableList<Lit>
             aig.addOutput(bits.first())
         }
-        aig.printAIGasASCII(ps)
+        return aig.printAIGasASCII(ps)
     }
 }

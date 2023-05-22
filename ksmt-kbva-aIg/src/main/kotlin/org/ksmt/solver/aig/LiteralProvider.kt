@@ -11,7 +11,7 @@ import org.ksmt.sort.*
 class LiteralProvider(private val ctx: KContext) {
 
     private val expressionToBits: HashMap<KDecl<*>, List<Lit>> = hashMapOf()
-    var currentLiteral: Lit = 0
+    var currentLiteral: Lit = 1
 
     fun newLiteral(): Lit {
         currentLiteral++
