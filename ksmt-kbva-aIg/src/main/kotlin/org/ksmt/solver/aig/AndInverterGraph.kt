@@ -1,21 +1,28 @@
 package org.ksmt.solver.aig
 
 import java.io.PrintStream
+import kotlin.math.absoluteValue
 
 typealias Lit = Int
 
 class AndInverterGraph(private val literalProvider: LiteralProvider) {
 
     private val outputs: HashSet<Lit> = HashSet()
+    private val negated: HashSet<Lit> = HashSet()
     private val triplets: HashSet<Triple<Lit, Lit, Lit>> = HashSet()
 
     private fun norm(id: Lit): Lit {
         if (id == -1) return 0
         if (id == 1) return 1
-        return if (id < 0) {
-            2 * (-id) + 1
+        val x = if (negated.contains(id.absoluteValue)) {
+            -id
         } else {
-            2 * id
+            id
+        }
+        return if (x < 0) {
+            2 * (-x) - 1
+        } else {
+            2 * x - 2
         }
     }
 
@@ -24,7 +31,13 @@ class AndInverterGraph(private val literalProvider: LiteralProvider) {
     }
 
     fun addEdge(c: Lit, a: Lit, b: Lit) {
-        triplets.add(Triple(norm(c), norm(a), norm(b)))
+        val x = norm(c)
+        if (x % 2 != 0) {
+            negated.add(x / 2 + 1)
+            triplets.add(Triple(x - 1, norm(a), norm(b)))
+        } else {
+            triplets.add(Triple(x, norm(a), norm(b)))
+        }
     }
 
     private fun normalizeOutputs() {
@@ -42,10 +55,10 @@ class AndInverterGraph(private val literalProvider: LiteralProvider) {
     fun printAIGasASCII(ps: PrintStream): Boolean {
         normalizeOutputs()
         if (outputs.size == 0) return false
-        val inputs = HashSet<Lit>((2..literalProvider.currentLiteral).toList())
-        triplets.forEach { (a, _, _) -> inputs.remove(a / 2) }
-        ps.println("aag ${literalProvider.currentLiteral} ${inputs.size} ${0} ${1} ${triplets.size}")
-        if (inputs.size > 0) inputs.sorted().forEach { ps.println(2 * it) }
+        val inputs = HashSet<Lit>((2 until 2 * literalProvider.currentLiteral step 2).toList())
+        triplets.forEach { (a, _, _) -> inputs.remove(a - a % 2) }
+        ps.println("aag ${literalProvider.currentLiteral - 1} ${inputs.size} ${0} ${1} ${triplets.size}")
+        if (inputs.size > 0) inputs.sorted().forEach { ps.println(it) }
         ps.println(outputs.first())
         triplets.forEach { (a, b, c) -> ps.println("$a $b $c") }
         return true

@@ -9,7 +9,7 @@ import java.io.PrintStream
 @Suppress("UNCHECKED_CAST")
 class AssertionConverter(ctx: KContext) {
 
-    private val literalProvider: LiteralProvider = LiteralProvider(ctx)
+    private val literalProvider: LiteralProvider = LiteralProvider()
     private val aig: AndInverterGraph = AndInverterGraph(literalProvider)
     private val exprToAIGTransformer: ExprToAIGTransformer =
         ExprToAIGTransformer(ctx, aig, literalProvider, "AIGBuilder")
