@@ -4,6 +4,8 @@ import org.ksmt.KContext
 import org.ksmt.solver.KSolverStatus
 import org.ksmt.solver.z3.KZ3SMTLibParser
 import java.io.*
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 fun getRealStatus(file: File): KSolverStatus {
     try {
@@ -27,18 +29,16 @@ fun getRealStatus(file: File): KSolverStatus {
 
 fun main() {
     val benchPath = File("benchmarks")
-    benchPath.walk().filter { !it.isDirectory }.forEach {
+    benchPath.walk().filter { !it.isDirectory }.forEach { it ->
         val trueStatus = getRealStatus(it)
         if (trueStatus != KSolverStatus.UNKNOWN) {
             val ctx = KContext()
             val assertions = KZ3SMTLibParser(ctx).parse(it.toPath())
-            val assertionConverter = AssertionConverter(ctx)
-            val aagFilePath = "aigs/${it.nameWithoutExtension}.aag"
-            File(aagFilePath).createNewFile()
-            if (!assertionConverter.assertionsToAAG(assertions, PrintStream(aagFilePath))) {
-                File(aagFilePath).delete()
-            }
-            println("$aagFilePath $trueStatus")
+            println(it.name)
+            val solver = Solver(ctx)
+            assertions.forEach { solver.assert(it) }
+            val s1 = solver.check(timeout = 1.minutes)
+            println("${s1} $trueStatus")
         }
     }
 }

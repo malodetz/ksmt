@@ -17,7 +17,3 @@ dependencies {
     implementation("com.github.UnitTestBot.kosat:kosat:main-SNAPSHOT")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
 }
-
-tasks.withType<KotlinCompile> {
-    kotlinOptions.freeCompilerArgs += listOf("-Xmx12g")
-}

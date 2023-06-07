@@ -54,13 +54,17 @@ class AndInverterGraph(private val literalProvider: LiteralProvider) {
 
     fun printAIGasASCII(ps: PrintStream): Boolean {
         normalizeOutputs()
-        if (outputs.size == 0) return false
+        if (outputs.size == 0) {
+            ps.close()
+            return false
+        }
         val inputs = HashSet<Lit>((2 until 2 * literalProvider.currentLiteral step 2).toList())
         triplets.forEach { (a, _, _) -> inputs.remove(a - a % 2) }
         ps.println("aag ${literalProvider.currentLiteral - 1} ${inputs.size} ${0} ${1} ${triplets.size}")
         if (inputs.size > 0) inputs.sorted().forEach { ps.println(it) }
         ps.println(outputs.first())
         triplets.forEach { (a, b, c) -> ps.println("$a $b $c") }
+        ps.close()
         return true
     }
 }

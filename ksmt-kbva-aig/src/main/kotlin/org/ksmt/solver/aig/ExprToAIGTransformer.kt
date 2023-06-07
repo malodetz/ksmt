@@ -26,6 +26,9 @@ class ExprToAIGTransformer(
     }
 
     private fun makeAnd(c: Lit, bits: List<Lit>) {
+        if (bits.size == 0) {
+            return
+        }
         val q = ArrayDeque<Lit>()
         q.addAll(bits)
         while (q.size > 2) {

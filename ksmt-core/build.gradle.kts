@@ -10,7 +10,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.UnitTestBot.kosat:kosat:main-SNAPSHOT")
+    implementation("com.github.UnitTestBot.kosat:kosat:65d3205c17")
 //    implementation("org.kosat:kosat:1.0-SNAPSHOT") {
 //        version {
 //            branch = "main"
