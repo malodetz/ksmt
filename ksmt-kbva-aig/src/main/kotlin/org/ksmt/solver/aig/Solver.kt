@@ -17,6 +17,7 @@ import kotlin.math.sign
 
 class Solver(private val ctx: KContext) : KSolver {
     private val assertions: MutableList<KExpr<KBoolSort>> = mutableListOf()
+    private val satSolver = KissatSolver()
 
     override fun assert(expr: KExpr<KBoolSort>) {
         assertions.add(expr)
@@ -55,16 +56,18 @@ class Solver(private val ctx: KContext) : KSolver {
         inputStream.close()
     }
 
-    override fun check(timeout: Duration): KSolverStatus {
+    fun prepare() {
         val assertionConverter = AssertionConverter(ctx)
         val path = "ksmt-temp/"
         val aagFilePath = path + "output.aag"
         val dimacsFilePath = path + "output.dimacs"
         assertionConverter.assertionsToAAG(assertions, PrintStream(aagFilePath))
-        val p = Runtime.getRuntime().exec("sh aig_to_simple_cnf.sh")
-        p.waitFor()
-        val satSolver = KissatSolver()
+        val process = ProcessBuilder("sh", "aig_to_simple_cnf.sh").start()
+        process.waitFor()
         parseDIMACS(dimacsFilePath, satSolver)
+    }
+
+    override fun check(timeout: Duration): KSolverStatus {
         var result: Boolean? = null
         if (timeout != Duration.INFINITE) {
             val t = Thread {

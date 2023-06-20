@@ -46,26 +46,26 @@ open class KZ3Solver(private val ctx: KContext) : KSolver {
     open val seedForRandom: Int = 0
 
     open fun createSortInternalizer(
-        internCtx: KZ3InternalizationContext,
-        z3Ctx: Context
+            internCtx: KZ3InternalizationContext,
+            z3Ctx: Context
     ): KZ3SortInternalizer = KZ3SortInternalizer(z3Ctx, internCtx)
 
     open fun createDeclInternalizer(
-        internCtx: KZ3InternalizationContext,
-        z3Ctx: Context,
-        sortInternalizer: KZ3SortInternalizer
+            internCtx: KZ3InternalizationContext,
+            z3Ctx: Context,
+            sortInternalizer: KZ3SortInternalizer
     ): KZ3DeclInternalizer = KZ3DeclInternalizer(z3Ctx, internCtx, sortInternalizer)
 
     open fun createExprInternalizer(
-        internCtx: KZ3InternalizationContext,
-        z3Ctx: Context,
-        sortInternalizer: KZ3SortInternalizer,
-        declInternalizer: KZ3DeclInternalizer
+            internCtx: KZ3InternalizationContext,
+            z3Ctx: Context,
+            sortInternalizer: KZ3SortInternalizer,
+            declInternalizer: KZ3DeclInternalizer
     ): KZ3ExprInternalizer = KZ3ExprInternalizer(ctx, z3Ctx, internCtx, sortInternalizer, declInternalizer)
 
     open fun createExprConverter(
-        internCtx: KZ3InternalizationContext,
-        z3Ctx: Context
+            internCtx: KZ3InternalizationContext,
+            z3Ctx: Context
     ) = KZ3ExprConverter(ctx, internCtx)
 
     private fun createSolver(): Solver = z3Ctx.mkSolver().apply {
@@ -113,8 +113,8 @@ open class KZ3Solver(private val ctx: KContext) : KSolver {
 
     @Suppress("SpreadOperator")
     override fun checkWithAssumptions(
-        assumptions: List<KExpr<KBoolSort>>,
-        timeout: Duration
+            assumptions: List<KExpr<KBoolSort>>,
+            timeout: Duration
     ): KSolverStatus = z3Try {
         val z3Assumptions = with(exprInternalizer) { assumptions.map { it.internalize() as BoolExpr } }
         solver.updateTimeout(timeout)

@@ -1,4 +1,4 @@
-package org.ksmt.solver.kbva
+package org.ksmt.solver.aig
 
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
@@ -6,14 +6,9 @@ import kotlinx.coroutines.withTimeoutOrNull
 import org.ksmt.KContext
 import org.ksmt.solver.KSolverStatus
 import org.ksmt.solver.z3.KZ3SMTLibParser
-import org.ksmt.solver.z3.KZ3Solver
-import java.io.BufferedReader
-import java.io.File
-import java.io.FileReader
-import java.io.IOException
+import java.io.*
 import kotlin.system.measureTimeMillis
 import kotlin.time.Duration.Companion.minutes
-
 
 fun getRealStatus(file: File): KSolverStatus {
     try {
@@ -49,9 +44,12 @@ fun main() {
             total += 1
             var isComplete = true
             var isCorrect = false
-            val solver = KZ3Solver(ctx)
+            val solver = Solver(ctx)
             val isAsserted = runBlocking {
-                val job = async { assertions.forEach { assertion -> solver.assert(assertion) } }
+                val job = async {
+                    assertions.forEach { assertion -> solver.assert(assertion) }
+                    solver.prepare()
+                }
                 val res = withTimeoutOrNull(1.minutes) {
                     job.await()
                     true
