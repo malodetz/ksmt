@@ -210,7 +210,7 @@ abstract class BenchmarksBasedTest {
         }
     }
 
-    class AsArrayDeclChecker(override val ctx: KContext, val model: KModel) : KTransformer {
+    class AsArrayDeclChecker(override val ctx: KContext, val model: KModel) : KTransformer() {
         override fun <D : KSort, R : KSort> transform(expr: KFunctionAsArray<D, R>): KExpr<KArraySort<D, R>> {
             assertNotNull(model.interpretation(expr.function), "no interpretation for as-array: $expr")
             return expr

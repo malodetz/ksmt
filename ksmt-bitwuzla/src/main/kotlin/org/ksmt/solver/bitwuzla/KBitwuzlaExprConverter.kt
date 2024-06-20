@@ -6,8 +6,8 @@ import org.ksmt.decl.KFuncDecl
 import org.ksmt.expr.KBitVecValue
 import org.ksmt.expr.KExpr
 import org.ksmt.expr.KFpRoundingMode
+import org.ksmt.expr.rewrite.KVisitor
 import org.ksmt.expr.transformer.KNonRecursiveTransformer
-import org.ksmt.expr.transformer.KTransformerBase
 import org.ksmt.solver.bitwuzla.bindings.BitwuzlaBitVector
 import org.ksmt.solver.bitwuzla.bindings.BitwuzlaKind
 import org.ksmt.solver.bitwuzla.bindings.BitwuzlaSort
@@ -746,9 +746,9 @@ open class KBitwuzlaExprConverter(
             builder.append(')')
         }
 
-        override fun accept(transformer: KTransformerBase): KExpr<KBv1Sort> {
-            check(transformer is AdapterTermRewriter) { "leaked adapter term" }
-            return transformer.transform(this)
+        override fun accept(visitor: KVisitor): Any {
+            check(visitor is AdapterTermRewriter) { "leaked adapter term" }
+            return visitor.transform(this)
         }
     }
 
@@ -761,9 +761,9 @@ open class KBitwuzlaExprConverter(
             builder.append(')')
         }
 
-        override fun accept(transformer: KTransformerBase): KExpr<KBoolSort> {
-            check(transformer is AdapterTermRewriter) { "leaked adapter term" }
-            return transformer.transform(this)
+        override fun accept(visitor: KVisitor): Any {
+            check(visitor is AdapterTermRewriter) { "leaked adapter term" }
+            return visitor.transform(this)
         }
     }
 
@@ -782,9 +782,9 @@ open class KBitwuzlaExprConverter(
             builder.append(')')
         }
 
-        override fun accept(transformer: KTransformerBase): KExpr<KArraySort<ToDomain, ToRange>> {
-            check(transformer is AdapterTermRewriter) { "leaked adapter term" }
-            return transformer.transform(this)
+        override fun accept(visitor: KVisitor): Any {
+            check(visitor is AdapterTermRewriter) { "leaked adapter term" }
+            return visitor.transform(this)
         }
     }
 

@@ -7,7 +7,7 @@ import org.ksmt.expr.transformer.KTransformer
 import org.ksmt.sort.KSort
 import org.ksmt.utils.mkConst
 
-class ConstCollector(override val ctx: KContext) : KTransformer {
+class ConstCollector(override val ctx: KContext) : KTransformer() {
     val constants = hashSetOf<KConst<*>>()
     override fun <T : KSort> transform(expr: KConst<T>): KExpr<T> {
         constants += expr

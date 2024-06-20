@@ -10,17 +10,20 @@ repositories {
 }
 
 dependencies {
-//    implementation("com.github.UnitTestBot.kosat:kosat:main-SNAPSHOT")
+    implementation(project(":ksmt-core"))
+    implementation(project(":ksmt-z3"))
+    implementation(project(":ksmt-bitwuzla"))
+    implementation(project(":ksmt-kissat"))
     implementation("org.kosat:kosat:1.0-SNAPSHOT") {
         version {
             branch = "main"
         }
     }
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
 }
 
-
 tasks.withType<KotlinCompile> {
-    kotlinOptions.freeCompilerArgs += listOf("-Xjvm-default=all")
+    kotlinOptions.freeCompilerArgs += listOf("-Xmx12g")
 }
 
 publishing {

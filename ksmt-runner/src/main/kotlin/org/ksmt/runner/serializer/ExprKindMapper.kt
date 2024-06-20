@@ -129,7 +129,7 @@ import org.ksmt.expr.KTrue
 import org.ksmt.expr.KUnaryMinusArithExpr
 import org.ksmt.expr.KUniversalQuantifier
 import org.ksmt.expr.KXorExpr
-import org.ksmt.expr.transformer.KTransformerBase
+import org.ksmt.expr.rewrite.KVisitor
 import org.ksmt.sort.KArithSort
 import org.ksmt.sort.KArraySort
 import org.ksmt.sort.KBoolSort
@@ -148,8 +148,9 @@ import org.ksmt.sort.KFpSort
 import org.ksmt.sort.KIntSort
 import org.ksmt.sort.KRealSort
 import org.ksmt.sort.KSort
+import java.util.*
 
-class ExprKindMapper: KTransformerBase {
+class ExprKindMapper: KVisitor(UUID.randomUUID().toString()) {
 
     fun getKind(expr: KExpr<*>): ExprKind {
         expr.accept(this)

@@ -10,7 +10,7 @@ import org.ksmt.sort.KArraySort
 import org.ksmt.sort.KBoolSort
 import org.ksmt.sort.KSort
 
-abstract class KNonRecursiveTransformer(override val ctx: KContext) : KTransformer {
+abstract class KNonRecursiveTransformer(override val ctx: KContext) : KTransformer() {
     private val transformed = hashMapOf<KExpr<*>, KExpr<*>>()
     private val exprStack = arrayListOf<KExpr<*>>()
     private var exprWasTransformed = false
@@ -27,7 +27,7 @@ abstract class KNonRecursiveTransformer(override val ctx: KContext) : KTransform
             val transformedExpr = expr.accept(this)
 
             if (exprWasTransformed) {
-                transformed[expr] = transformedExpr
+                transformed[expr] = transformedExpr as KExpr<*>
             }
         }
 

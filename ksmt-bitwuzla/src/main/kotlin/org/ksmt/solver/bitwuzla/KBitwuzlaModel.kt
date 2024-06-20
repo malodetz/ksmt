@@ -24,7 +24,7 @@ open class KBitwuzlaModel(
         get() = bitwuzlaCtx.declaredConstants()
 
     private val interpretations: MutableMap<KDecl<*>, KModel.KFuncInterp<*>> = hashMapOf()
-
+    @Suppress("UNCHECKED_CAST")
     override fun <T : KSort> eval(expr: KExpr<T>, isComplete: Boolean): KExpr<T> = bitwuzlaCtx.bitwuzlaTry {
         with(ctx) {
             bitwuzlaCtx.ensureActive()
@@ -39,7 +39,7 @@ open class KBitwuzlaModel(
 
                 convertedExpr.accept(ModelCompleter(expr, incompleteDecls))
             }
-        }
+        } as KExpr<T>
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -150,7 +150,7 @@ open class KBitwuzlaModel(
     inner class ModelCompleter(
         private val evaluatedExpr: KExpr<*>,
         private val incompleteDecls: Set<KDecl<*>>
-    ) : KTransformer {
+    ) : KTransformer() {
         override val ctx: KContext = this@KBitwuzlaModel.ctx
 
         override fun <T : KSort> transformExpr(expr: KExpr<T>): KExpr<T> = with(ctx) {

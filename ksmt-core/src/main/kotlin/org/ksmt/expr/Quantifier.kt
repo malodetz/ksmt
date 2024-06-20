@@ -2,7 +2,7 @@ package org.ksmt.expr
 
 import org.ksmt.KContext
 import org.ksmt.decl.KDecl
-import org.ksmt.expr.transformer.KTransformerBase
+import org.ksmt.expr.rewrite.KVisitor
 import org.ksmt.sort.KBoolSort
 
 class KExistentialQuantifier internal constructor(
@@ -10,7 +10,7 @@ class KExistentialQuantifier internal constructor(
     body: KExpr<KBoolSort>,
     bounds: List<KDecl<*>>
 ) : KQuantifier(ctx, body, bounds) {
-    override fun accept(transformer: KTransformerBase): KExpr<KBoolSort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 
     override fun printQuantifierName(): String = "exists"
 }
@@ -20,7 +20,7 @@ class KUniversalQuantifier internal constructor(
     body: KExpr<KBoolSort>,
     bounds: List<KDecl<*>>
 ) : KQuantifier(ctx, body, bounds) {
-    override fun accept(transformer: KTransformerBase): KExpr<KBoolSort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 
     override fun printQuantifierName(): String = "forall"
 }

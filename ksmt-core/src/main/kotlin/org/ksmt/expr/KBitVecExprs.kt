@@ -2,7 +2,7 @@ package org.ksmt.expr
 
 import org.ksmt.KContext
 import org.ksmt.decl.KDecl
-import org.ksmt.expr.transformer.KTransformerBase
+import org.ksmt.expr.rewrite.KVisitor
 import org.ksmt.sort.KBv1Sort
 import org.ksmt.sort.KBoolSort
 import org.ksmt.sort.KBv16Sort
@@ -25,7 +25,7 @@ class KBitVec1Value internal constructor(
     ctx: KContext,
     val value: Boolean
 ) : KBitVecValue<KBv1Sort>(ctx) {
-    override fun accept(transformer: KTransformerBase): KExpr<KBv1Sort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 
     override val stringValue: String = if (value) "1" else "0"
 
@@ -45,7 +45,7 @@ class KBitVec8Value internal constructor(
     ctx: KContext,
     byteValue: Byte
 ) : KBitVecNumberValue<KBv8Sort, Byte>(ctx, byteValue) {
-    override fun accept(transformer: KTransformerBase): KExpr<KBv8Sort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 
     override fun decl(): KDecl<KBv8Sort> = ctx.mkBvDecl(numberValue)
 
@@ -56,7 +56,7 @@ class KBitVec16Value internal constructor(
     ctx: KContext,
     shortValue: Short
 ) : KBitVecNumberValue<KBv16Sort, Short>(ctx, shortValue) {
-    override fun accept(transformer: KTransformerBase): KExpr<KBv16Sort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 
     override fun decl(): KDecl<KBv16Sort> = ctx.mkBvDecl(numberValue)
 
@@ -67,7 +67,7 @@ class KBitVec32Value internal constructor(
     ctx: KContext,
     intValue: Int
 ) : KBitVecNumberValue<KBv32Sort, Int>(ctx, intValue) {
-    override fun accept(transformer: KTransformerBase): KExpr<KBv32Sort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 
     override fun decl(): KDecl<KBv32Sort> = ctx.mkBvDecl(numberValue)
 
@@ -78,7 +78,7 @@ class KBitVec64Value internal constructor(
     ctx: KContext,
     longValue: Long
 ) : KBitVecNumberValue<KBv64Sort, Long>(ctx, longValue) {
-    override fun accept(transformer: KTransformerBase): KExpr<KBv64Sort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 
     override fun decl(): KDecl<KBv64Sort> = ctx.mkBvDecl(numberValue)
 
@@ -97,7 +97,7 @@ class KBitVecCustomValue internal constructor(
         }
     }
 
-    override fun accept(transformer: KTransformerBase): KExpr<KBvSort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 
     override val stringValue: String = binaryStringValue
 
@@ -121,7 +121,7 @@ class KBvNotExpr<S : KBvSort> internal constructor(
 
     override fun sort(): S = value.sort()
 
-    override fun accept(transformer: KTransformerBase): KExpr<S> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 /**
@@ -138,7 +138,7 @@ class KBvReductionAndExpr<S : KBvSort> internal constructor(
 
     override fun sort(): KBv1Sort = ctx.mkBv1Sort()
 
-    override fun accept(transformer: KTransformerBase): KExpr<KBv1Sort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 /**
@@ -155,7 +155,7 @@ class KBvReductionOrExpr<S : KBvSort> internal constructor(
 
     override fun sort(): KBv1Sort = ctx.mkBv1Sort()
 
-    override fun accept(transformer: KTransformerBase): KExpr<KBv1Sort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 /**
@@ -173,7 +173,7 @@ class KBvAndExpr<S : KBvSort> internal constructor(
 
     override fun sort(): S = arg0.sort()
 
-    override fun accept(transformer: KTransformerBase): KExpr<S> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 /**
@@ -191,7 +191,7 @@ class KBvOrExpr<S : KBvSort> internal constructor(
 
     override fun sort(): S = arg0.sort()
 
-    override fun accept(transformer: KTransformerBase): KExpr<S> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 /**
@@ -209,7 +209,7 @@ class KBvXorExpr<S : KBvSort> internal constructor(
 
     override fun sort(): S = arg0.sort()
 
-    override fun accept(transformer: KTransformerBase): KExpr<S> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 /**
@@ -227,7 +227,7 @@ class KBvNAndExpr<S : KBvSort> internal constructor(
 
     override fun sort(): S = arg0.sort()
 
-    override fun accept(transformer: KTransformerBase): KExpr<S> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 /**
@@ -245,7 +245,7 @@ class KBvNorExpr<S : KBvSort> internal constructor(
 
     override fun sort(): S = arg0.sort()
 
-    override fun accept(transformer: KTransformerBase): KExpr<S> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 /**
@@ -264,7 +264,7 @@ class KBvXNorExpr<S : KBvSort> internal constructor(
 
     override fun sort(): S = arg0.sort()
 
-    override fun accept(transformer: KTransformerBase): KExpr<S> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 /**
@@ -281,7 +281,7 @@ class KBvNegationExpr<S : KBvSort> internal constructor(
 
     override fun sort(): S = value.sort()
 
-    override fun accept(transformer: KTransformerBase): KExpr<S> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 /**
@@ -299,7 +299,7 @@ class KBvAddExpr<S : KBvSort> internal constructor(
 
     override fun sort(): S = arg0.sort()
 
-    override fun accept(transformer: KTransformerBase): KExpr<S> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 /**
@@ -317,7 +317,7 @@ class KBvSubExpr<S : KBvSort> internal constructor(
 
     override fun sort(): S = arg0.sort()
 
-    override fun accept(transformer: KTransformerBase): KExpr<S> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 /**
@@ -335,7 +335,7 @@ class KBvMulExpr<S : KBvSort> internal constructor(
 
     override fun sort(): S = arg0.sort()
 
-    override fun accept(transformer: KTransformerBase): KExpr<S> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 /**
@@ -356,7 +356,7 @@ class KBvUnsignedDivExpr<S : KBvSort> internal constructor(
 
     override fun sort(): S = arg0.sort()
 
-    override fun accept(transformer: KTransformerBase): KExpr<S> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 /**
@@ -379,7 +379,7 @@ class KBvSignedDivExpr<S : KBvSort> internal constructor(
 
     override fun sort(): S = arg0.sort()
 
-    override fun accept(transformer: KTransformerBase): KExpr<S> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 /**
@@ -400,7 +400,7 @@ class KBvUnsignedRemExpr<S : KBvSort> internal constructor(
 
     override fun sort(): S = arg0.sort()
 
-    override fun accept(transformer: KTransformerBase): KExpr<S> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 /**
@@ -422,7 +422,7 @@ class KBvSignedRemExpr<S : KBvSort> internal constructor(
 
     override fun sort(): S = arg0.sort()
 
-    override fun accept(transformer: KTransformerBase): KExpr<S> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 /**
@@ -440,7 +440,7 @@ class KBvSignedModExpr<S : KBvSort> internal constructor(
     override fun decl(): KDecl<S> = ctx.mkBvSignedModDecl(arg0.sort(), arg1.sort())
     override fun sort(): S = arg0.sort()
 
-    override fun accept(transformer: KTransformerBase): KExpr<S> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 /**
@@ -458,7 +458,7 @@ class KBvUnsignedLessExpr<S : KBvSort> internal constructor(
 
     override fun sort(): KBoolSort = ctx.mkBoolSort()
 
-    override fun accept(transformer: KTransformerBase): KExpr<KBoolSort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 /**
@@ -476,7 +476,7 @@ class KBvSignedLessExpr<S : KBvSort> internal constructor(
 
     override fun sort(): KBoolSort = ctx.mkBoolSort()
 
-    override fun accept(transformer: KTransformerBase): KExpr<KBoolSort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 /**
@@ -495,7 +495,7 @@ class KBvUnsignedLessOrEqualExpr<S : KBvSort> internal constructor(
     override fun sort(): KBoolSort = ctx.mkBoolSort()
 
 
-    override fun accept(transformer: KTransformerBase): KExpr<KBoolSort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 /**
@@ -514,7 +514,7 @@ class KBvSignedLessOrEqualExpr<S : KBvSort> internal constructor(
     override fun sort(): KBoolSort = ctx.mkBoolSort()
 
 
-    override fun accept(transformer: KTransformerBase): KExpr<KBoolSort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 /**
@@ -532,7 +532,7 @@ class KBvUnsignedGreaterOrEqualExpr<S : KBvSort> internal constructor(
 
     override fun sort(): KBoolSort = ctx.mkBoolSort()
 
-    override fun accept(transformer: KTransformerBase): KExpr<KBoolSort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 /**
@@ -550,7 +550,7 @@ class KBvSignedGreaterOrEqualExpr<S : KBvSort> internal constructor(
 
     override fun sort(): KBoolSort = ctx.mkBoolSort()
 
-    override fun accept(transformer: KTransformerBase): KExpr<KBoolSort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 /**
@@ -568,7 +568,7 @@ class KBvUnsignedGreaterExpr<S : KBvSort> internal constructor(
 
     override fun sort(): KBoolSort = ctx.mkBoolSort()
 
-    override fun accept(transformer: KTransformerBase): KExpr<KBoolSort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 /**
@@ -586,7 +586,7 @@ class KBvSignedGreaterExpr<S : KBvSort> internal constructor(
 
     override fun sort(): KBoolSort = ctx.mkBoolSort()
 
-    override fun accept(transformer: KTransformerBase): KExpr<KBoolSort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 /**
@@ -606,7 +606,7 @@ class KBvConcatExpr internal constructor(
 
     override fun sort(): KBvSort = decl().sort
 
-    override fun accept(transformer: KTransformerBase): KExpr<KBvSort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 /**
@@ -628,7 +628,7 @@ class KBvExtractExpr internal constructor(
 
     override fun sort(): KBvSort = ctx.mkBvSort((high - low + 1).toUInt())
 
-    override fun accept(transformer: KTransformerBase): KExpr<KBvSort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 /**
@@ -649,7 +649,7 @@ class KBvSignExtensionExpr internal constructor(
 
     override fun sort(): KBvSort = ctx.mkBvSort(value.sort().sizeBits + extensionSize.toUInt())
 
-    override fun accept(transformer: KTransformerBase): KExpr<KBvSort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 
 }
 
@@ -671,7 +671,7 @@ class KBvZeroExtensionExpr internal constructor(
 
     override fun sort(): KBvSort = ctx.mkBvSort(value.sort().sizeBits + extensionSize.toUInt())
 
-    override fun accept(transformer: KTransformerBase): KExpr<KBvSort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 
 }
 
@@ -690,7 +690,7 @@ class KBvRepeatExpr internal constructor(
 
     override fun sort(): KBvSort = ctx.mkBvSort(value.sort().sizeBits * repeatNumber.toUInt())
 
-    override fun accept(transformer: KTransformerBase): KExpr<KBvSort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 
 }
 
@@ -711,7 +711,7 @@ class KBvShiftLeftExpr<S : KBvSort> internal constructor(
 
     override fun sort(): S = arg0.sort()
 
-    override fun accept(transformer: KTransformerBase): KExpr<S> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 
 }
 
@@ -732,7 +732,7 @@ class KBvLogicalShiftRightExpr<S : KBvSort> internal constructor(
 
     override fun sort(): S = arg0.sort()
 
-    override fun accept(transformer: KTransformerBase): KExpr<S> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 
 }
 
@@ -754,7 +754,7 @@ class KBvArithShiftRightExpr<S : KBvSort> internal constructor(
 
     override fun sort(): S = arg0.sort()
 
-    override fun accept(transformer: KTransformerBase): KExpr<S> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 
 }
 
@@ -775,7 +775,7 @@ class KBvRotateLeftExpr<S : KBvSort> internal constructor(
 
     override fun sort(): S = arg0.sort()
 
-    override fun accept(transformer: KTransformerBase): KExpr<S> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 /**
@@ -795,7 +795,7 @@ class KBvRotateLeftIndexedExpr<S : KBvSort> internal constructor(
 
     override fun sort(): S = value.sort()
 
-    override fun accept(transformer: KTransformerBase): KExpr<S> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 /**
@@ -815,7 +815,7 @@ class KBvRotateRightExpr<S : KBvSort> internal constructor(
 
     override fun sort(): S = arg0.sort()
 
-    override fun accept(transformer: KTransformerBase): KExpr<S> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 /**
@@ -835,7 +835,7 @@ class KBvRotateRightIndexedExpr<S : KBvSort> internal constructor(
 
     override fun sort(): S = value.sort()
 
-    override fun accept(transformer: KTransformerBase): KExpr<S> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 /**
@@ -859,7 +859,7 @@ class KBv2IntExpr internal constructor(
 
     override fun sort(): KIntSort = ctx.mkIntSort()
 
-    override fun accept(transformer: KTransformerBase): KExpr<KIntSort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 class KBvAddNoOverflowExpr<S : KBvSort> internal constructor(
@@ -875,7 +875,7 @@ class KBvAddNoOverflowExpr<S : KBvSort> internal constructor(
 
     override fun sort(): KBoolSort = ctx.mkBoolSort()
 
-    override fun accept(transformer: KTransformerBase): KExpr<KBoolSort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 class KBvAddNoUnderflowExpr<S : KBvSort> internal constructor(
@@ -890,7 +890,7 @@ class KBvAddNoUnderflowExpr<S : KBvSort> internal constructor(
 
     override fun sort(): KBoolSort = ctx.mkBoolSort()
 
-    override fun accept(transformer: KTransformerBase): KExpr<KBoolSort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 class KBvSubNoOverflowExpr<S : KBvSort> internal constructor(
@@ -905,7 +905,7 @@ class KBvSubNoOverflowExpr<S : KBvSort> internal constructor(
 
     override fun sort(): KBoolSort = ctx.mkBoolSort()
 
-    override fun accept(transformer: KTransformerBase): KExpr<KBoolSort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 class KBvSubNoUnderflowExpr<S : KBvSort> internal constructor(
@@ -921,7 +921,7 @@ class KBvSubNoUnderflowExpr<S : KBvSort> internal constructor(
 
     override fun sort(): KBoolSort = ctx.mkBoolSort()
 
-    override fun accept(transformer: KTransformerBase): KExpr<KBoolSort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 class KBvDivNoOverflowExpr<S : KBvSort> internal constructor(
@@ -936,7 +936,7 @@ class KBvDivNoOverflowExpr<S : KBvSort> internal constructor(
 
     override fun sort(): KBoolSort = ctx.mkBoolSort()
 
-    override fun accept(transformer: KTransformerBase): KExpr<KBoolSort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 class KBvNegNoOverflowExpr<S : KBvSort> internal constructor(
@@ -950,7 +950,7 @@ class KBvNegNoOverflowExpr<S : KBvSort> internal constructor(
 
     override fun sort(): KBoolSort = ctx.mkBoolSort()
 
-    override fun accept(transformer: KTransformerBase): KExpr<KBoolSort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 class KBvMulNoOverflowExpr<S : KBvSort> internal constructor(
@@ -966,7 +966,7 @@ class KBvMulNoOverflowExpr<S : KBvSort> internal constructor(
 
     override fun sort(): KBoolSort = ctx.mkBoolSort()
 
-    override fun accept(transformer: KTransformerBase): KExpr<KBoolSort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }
 
 class KBvMulNoUnderflowExpr<S : KBvSort> internal constructor(
@@ -981,5 +981,5 @@ class KBvMulNoUnderflowExpr<S : KBvSort> internal constructor(
 
     override fun sort(): KBoolSort = ctx.mkBoolSort()
 
-    override fun accept(transformer: KTransformerBase): KExpr<KBoolSort> = transformer.transform(this)
+    override fun accept(visitor: KVisitor): Any = visitor.transform(this)
 }

@@ -1,16 +1,17 @@
 package org.ksmt.solver.util
 
 import org.ksmt.expr.KExpr
-import org.ksmt.expr.transformer.KTransformerBase
+import org.ksmt.expr.rewrite.KVisitor
 import org.ksmt.solver.util.KExprInternalizerBase.ExprInternalizationResult.Companion.argumentsInternalizationRequired
 import org.ksmt.solver.util.KExprInternalizerBase.ExprInternalizationResult.Companion.notInitializedInternalizationResult
 import org.ksmt.sort.KSort
+import java.util.*
 
-abstract class KExprInternalizerBase<T : Any> : KTransformerBase {
+abstract class KExprInternalizerBase<T : Any> : KVisitor(UUID.randomUUID().toString()) {
     val exprStack = arrayListOf<KExpr<*>>()
 
     /**
-     * Keeps result of last [KTransformerBase.transform] invocation.
+     * Keeps result of last [KVisitor.transform] invocation.
      * */
     var lastExprInternalizationResult: ExprInternalizationResult = notInitializedInternalizationResult
 
